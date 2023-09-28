@@ -83,6 +83,14 @@ const onContainerResized = () => {
   window.dispatchEvent(new Event('resize'))
 }
 
+const retrieveFilters = () => {
+
+}
+
+const applyFilters = () => {
+
+}
+
 </script>
 
 <template>
@@ -142,8 +150,15 @@ const onContainerResized = () => {
           location="right"
           temporary
       >
-        <v-list>
-          <v-list-item>123</v-list-item>
+        <v-list style="height: 100%">
+          <v-list-item>
+            <v-select label="Зам" />
+          </v-list-item>
+          <v-list-item>
+              <v-select label="ЦТС" />
+          </v-list-item>
+
+          <v-btn variant="text" color="green" style="position: absolute; bottom: 10px; width: 100%" @click="applyFilters">Применить</v-btn>
         </v-list>
       </v-navigation-drawer>
     </template>

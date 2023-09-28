@@ -1,12 +1,13 @@
 <script setup lang="ts">
-const props = defineProps(['dialog', 'title']);
+const props = defineProps(['dialog', 'title', 'width']);
 </script>
 
 <template>
   <div class="text-center">
     <v-dialog
         :model-value="props.dialog"
-        width="500"
+        :width="props.width || 500"
+        persistent
     >
       <v-card>
         <v-card-text>{{ props.title }}</v-card-text>

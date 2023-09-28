@@ -11,11 +11,10 @@ const userStore = ref({
   <div style="background-color: rgb(33,33,33); height: 65px;">
     <v-card-item>
       <div class="avatar">
-        <v-avatar color="success" size="50"><span>{{ userStore.userAvatar}}</span></v-avatar>
+        <v-avatar color="warning" size="50"><span>{{ userStore.userAvatar}}</span></v-avatar>
         <div class="fio">
           Добро пожаловать
-          <p>
-            <strong>{{ userStore.userFio }}</strong>
+          <p>{{ userStore.userFio }}
           </p>
         </div>
       </div>

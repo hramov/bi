@@ -8,6 +8,7 @@ export const useAppStore = defineStore('app', () => {
    const pagesMapper = {
       'dashboards': 'Дашборды',
       'dashboard': 'Дашборд',
+      'data_sources': 'Источники данных'
    }
 
    const calcBreadcrumbs = computed(() => {
