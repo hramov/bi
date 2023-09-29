@@ -2,6 +2,9 @@
 import Page from "../layout/components/Page.vue";
 import DataSourceModal from "./components/DataSourceModal.vue";
 import {ref} from "vue";
+import {useDatasourceStore} from "../../modules/store/datasource.store.ts";
+
+const store = useDatasourceStore();
 
 const dialog = ref(false);
 
@@ -9,8 +12,10 @@ const showBanner = ref(true);
 
 const dataSourceData = ref({} as any);
 
-const editDataSource = (row: any) => {
-  dataSourceData.value = row;
+const editDataSource = async (id: number) => {
+  await store.getSourceById(id)
+  dataSourceData.value = store.source;
+  console.log(dataSourceData.value)
   dialog.value = true;
 }
 
@@ -45,6 +50,8 @@ const deleteDataSource = () => {
       <div class="data_sources" style="padding-top: 20px">
         <v-card
             variant="elevated"
+            v-for="s in store.sources"
+            :key="s.id"
         >
           <v-card-item>
             <div>
@@ -53,15 +60,12 @@ const deleteDataSource = () => {
               <div class="text-h6 mb-1">
                 Postgres
               </div>
-              <div class="text-caption" style="max-width: 200px">Host: localhost</div>
-              <div class="text-caption" style="max-width: 200px">Port: 5432</div>
-              <div class="text-caption" style="max-width: 200px">User: postgres</div>
-              <div class="text-caption" style="max-width: 200px">Database: bi</div>
+              <div class="text-caption">DSN: {{ s.dsn }}</div>
             </div>
           </v-card-item>
 
           <v-card-actions>
-            <v-btn icon="mdi-pencil" @click="editDataSource"></v-btn>
+            <v-btn icon="mdi-pencil" @click="editDataSource(s.id)"></v-btn>
             <v-btn icon="mdi-delete" @click="deleteDataSource"></v-btn>
           </v-card-actions>
         </v-card>

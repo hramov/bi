@@ -1,4 +1,4 @@
-package http
+package http_ds
 
 import (
 	"context"
@@ -6,17 +6,15 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
-	"github.com/hramov/gvc-bi/backend/internal/api/http/handlers/dashboards"
-	"github.com/hramov/gvc-bi/backend/internal/api/http/handlers/datasource"
-	"github.com/hramov/gvc-bi/backend/internal/api/http/handlers/users"
+	"github.com/hramov/gvc-bi/backend/internal/api/http_ds/handler_ds"
 	"github.com/hramov/gvc-bi/backend/internal/repository"
 	"log"
 	"net/http"
 )
 
 type Server struct {
-	db   *sql.DB
 	port int
+	db   *sql.DB
 }
 
 func New(port int, db *sql.DB) *Server {
@@ -24,15 +22,9 @@ func New(port int, db *sql.DB) *Server {
 }
 
 func (s *Server) registerHandlers(r chi.Router) {
-	u := users.New(s.db)
-	r.Route("/users", u.Register)
-
-	d := dashboards.New(s.db)
-	r.Route("/dashboards", d.Register)
-
-	dsRepo := &repository.DatasourceRepository{Db: s.db}
-	ds := datasource.New(dsRepo)
-	r.Route("/datasource", ds.Register)
+	dsRepo := repository.DatasourceRepository{Db: s.db}
+	h := handler_ds.New(dsRepo)
+	r.Route("/ds", h.Register)
 }
 
 func (s *Server) Start(ctx context.Context) {
@@ -47,28 +39,24 @@ func (s *Server) Start(ctx context.Context) {
 		MaxAge:           300,
 	}))
 
-	fs := http.FileServer(http.Dir("static"))
-	r.Handle("/static/*", http.StripPrefix("/static/", fs))
-
 	r.Route("/api", s.registerHandlers)
 
 	go func() {
-		log.Println("starting server")
+		log.Println("starting datasource server")
 		if err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r); err != nil {
-			log.Println(fmt.Sprintf("cannot start server: %v", err))
+			log.Println(fmt.Sprintf("cannot start datasource server: %v", err))
 			return
 		}
 	}()
 
 	<-ctx.Done()
-	log.Println(fmt.Sprintf("starting graceful shutdown for server"))
+	log.Println(fmt.Sprintf("starting graceful shutdown for datasource server"))
 	err := s.StopServer()
 	if err != nil {
-		log.Println(fmt.Sprintf("cannot stop server"))
+		log.Println(fmt.Sprintf("cannot stop datasource server"))
 	}
 }
 
 func (s *Server) StopServer() error {
-	s.db.Close()
 	return nil
 }

@@ -37,7 +37,7 @@ func (d *DashboardsRepository) Get() ([]*Model, error) {
 
 	models := []*Model{}
 	for rows.Next() {
-		var model *Model
+		model := &Model{}
 		err = rows.Scan(&model.Id, &model.DashId, &model.Title, &model.Description, &model.CreatedAt, &model.UpdatedAt, &model.DeletedAt)
 		if err != nil {
 			return nil, err

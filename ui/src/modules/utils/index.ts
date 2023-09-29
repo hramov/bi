@@ -95,6 +95,10 @@ export function calcMinValueTime(data: any, field: string, options: any, axisId:
     options.value.yAxis[axisId].min = min - ((max - min) * 0.1);
 }
 
+export function defaultLabelFormatter (val: string) {
+    return moment(val).format('DD.MM.YYYY')
+}
+
 export const data = [
     {
         "Дата": "2023-06-26T00:00:00.000Z",

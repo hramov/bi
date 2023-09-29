@@ -35,6 +35,7 @@ axios.interceptors.response.use(
 
 export default class ApiManager {
   static apiUri = import.meta.env.VITE_APP_API_URL
+  static dsUri = import.meta.env.VITE_APP_DS_URL
   static userUri = import.meta.env.VITE_APP_USER_URL
 
   static async get(endpoint: string) {
@@ -52,14 +53,26 @@ export default class ApiManager {
     return await axios.put(ApiManager.apiUri + endpoint, data)
   }
 
-  static async delete(id: number) {
-    const result = await axios.delete(ApiManager.apiUri + id)
+  static async delete(endpoint: string, id: number) {
+    const result = await axios.delete(ApiManager.apiUri + endpoint + id)
     return result.data
   }
 
   static async getUser() {
     const user = await axios.get(ApiManager.userUri)
     if (user.data) return user.data
+    return new GetDataError()
+  }
+
+  static async checkConnection(options: any) {
+    const result = await axios.post(ApiManager.dsUri + '/ds/check', options)
+    if (result.data) return result.data;
+    return new GetDataError()
+  }
+
+  static async performQuery(options: any) {
+    const result = await axios.post(ApiManager.dsUri + '/ds/perform', options)
+    if (result.data) return result.data;
     return new GetDataError()
   }
 }

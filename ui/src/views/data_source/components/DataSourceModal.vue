@@ -1,19 +1,12 @@
 <script setup lang="ts">
 
 import CreateModal from "../../layout/components/CreateModal.vue";
-import {computed, reactive, ref} from "vue";
+import {computed, ref, watch} from "vue";
+import ApiManager from "../../../modules/api/api.ts";
+import {useDatasourceStore} from "../../../modules/store/datasource.store.ts";
 
 const props = defineProps(['dialog', 'data']);
 const emit = defineEmits(['close', 'save']);
-
-const onSave = () => {
-  status.value = {
-    color: 'yellow',
-    text: 'не проверено',
-  }
-  reset();
-  emit('save');
-}
 
 const onClose = () => {
   status.value = {
@@ -25,13 +18,7 @@ const onClose = () => {
 }
 
 const reset = () => {
-  model.driver = null;
-  model.title = '';
-  model.host = '';
-  model.port = 5432;
-  model.user = '';
-  model.password = '';
-  model.checked = false;
+  model.value = {};
 }
 
 const loading = ref(false);
@@ -40,28 +27,68 @@ const status = ref({
   text: 'не проверено',
 });
 
-const model = reactive(props.data || {
+const model = ref({
   driver: null,
   title: '',
   host: '',
-  port: 5432,
+  port: '5432',
   user: '',
   password: '',
+  database: '',
+  sslmode: 'disable',
   checked: false,
 });
 
-const canCheckConnection = computed(() => {
-  return model.driver && model.title && model.host && model.port && model.user && model.password;
+watch(() => props.data.id, () => {
+  model.value = { ...props.data, ...credentials(props.data.dsn)};
 })
 
-const checkConnection = () => {
+const canCheckConnection = computed(() => {
+  return model.value.driver && model.value.title && model.value.host && model.value.port && model.value.user && model.value.password;
+})
+
+const checkConnection = async () => {
   loading.value = true;
-  setTimeout(() => {
-    loading.value = false;
-    model.checked = true;
+  const result = await ApiManager.checkConnection(model.value);
+  loading.value = false;
+
+  if (result.status === 'accepted') {
+    model.value.checked = true;
     status.value.color = 'green';
     status.value.text = 'Успешно';
-  }, 2000);
+  } else {
+    model.value.checked = false;
+    status.value.color = 'red';
+    status.value.text = 'Ошибка: ' + result.message;
+  }
+}
+
+const store = useDatasourceStore();
+
+const dsn = computed(() => {
+  return `postgresql://${model.value.user}:${model.value.password}@${model.value.host}:${model.value.port}/${model.value.database}?sslmode=${model.value.sslmode}`
+});
+
+const credentials = (dsn: string) => {
+  if (!dsn) return {};
+
+  const driverPrefix = dsn.split('://')[0];
+  const user = dsn.split('://')[1].split(':')[0];
+  const password = dsn.split('://')[1].split(':')[1].split('@')[0];
+  const host = dsn.split('://')[1].split(':')[1].split('@')[1].split(':')[0];
+  const port = dsn.split('://')[1].split(':')[2].split('/')[0]
+  const database = dsn.split('://')[1].split(':')[2].split('/')[1].split('?')[0]
+  const sslmode = dsn.split('://')[1].split(':')[2].split('/')[1].split('?')[1].split('sslmode=')[1]
+
+  return {
+    driverPrefix, user,password, host, port, database, sslmode
+  }
+};
+
+const onSave = async () => {
+  model.value.dsn = dsn;
+  await store.saveSource(model.value);
+  emit('save');
 }
 </script>
 
@@ -69,9 +96,11 @@ const checkConnection = () => {
   <CreateModal title="Создать источник данных" :dialog="props.dialog" :width="700">
     <template v-slot:form>
       <v-form>
+        <v-row><v-col>{{ dsn }}</v-col></v-row>
+
         <v-row>
           <v-col>
-            <v-select label="Драйвер *" v-model="model.driver" />
+            <v-select label="Драйвер *" v-model="model.driver" :items="store.drivers" item-title="title" item-value="code"/>
           </v-col>
           <v-col>
             <v-text-field label="Название *" v-model="model.title" />
@@ -98,7 +127,7 @@ const checkConnection = () => {
 
         <v-row>
           <v-col>
-            <v-text-field label="Название БД" v-model="model.user" />
+            <v-text-field label="Название БД" v-model="model.database" />
           </v-col>
         </v-row>
 
@@ -114,7 +143,7 @@ const checkConnection = () => {
     </template>
 
     <template v-slot:actions>
-      <v-btn color="green" @click="onSave" :disabled="!model.checked">Создать</v-btn>
+      <v-btn color="green" @click="onSave" :disabled="!model.checked">Сохранить</v-btn>
       <v-btn color="grey" @click="onClose">Закрыть</v-btn>
     </template>
   </CreateModal>

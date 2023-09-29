@@ -2,12 +2,14 @@
 import {reactive} from "vue";
 import CreateModalFullScreen from "../../../layout/components/CreateModalFullScreen.vue";
 import AddDataRowModal from "./AddDataRowModal.vue";
+import ChartOptionsForm from "./components/ChartOptionsForm.vue";
 const props = defineProps(['dialog']);
 const emit = defineEmits(['close', 'save']);
 
 const model = reactive({
   title: '',
   description: '',
+  dashboard: '',
 });
 
 const onSave = () => {
@@ -18,6 +20,7 @@ const onSave = () => {
 const clear = () => {
   model.title = '';
   model.description = '';
+  model.dashboard = '';
 }
 
 </script>
@@ -41,7 +44,8 @@ const clear = () => {
           </v-col>
         </v-row>
 
-        <AddDataRowModal />
+<!--        <AddDataRowModal />-->
+        <ChartOptionsForm />
 
       </v-form>
     </template>
