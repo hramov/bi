@@ -15,7 +15,6 @@ const dataSourceData = ref({} as any);
 const editDataSource = async (id: number) => {
   await store.getSourceById(id)
   dataSourceData.value = store.source;
-  console.log(dataSourceData.value)
   dialog.value = true;
 }
 

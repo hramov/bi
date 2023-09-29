@@ -9,28 +9,11 @@ const store = useDatasourceStore();
 const model = ref({
   data: `[]`,
   options: `{}`,
-  query: `SELECT * FROM table`,
+  query: `SELECT * FROM`,
   source: null,
 });
 
-const result = ref([] as any)
-
-const replaceFunctions = (options: string) => {
-  const optObject = JSON.parse(options);
-  replaceFunctionsImpl(optObject);
-}
-
-const replaceFunctionsImpl = (root: any) => {
-  if (typeof root === 'function') {
-    throw new Error('Functions are not allowed');
-  }
-  if (typeof root !== 'object') {
-    if (root.startsWith('customfn_')) {
-      const handler = root.replace('customfn_', '');
-      console.log(handler);
-    }
-  }
-}
+const result = ref([] as any);
 
 const getData = async () => {
   const res = await ApiManager.performQuery(model.value);

@@ -5,7 +5,7 @@ import CreateChartModal from "./components/modals/CreateChartModal.vue";
 import {useDashboardStore} from "../../modules/store/dashboard.store.ts";
 import {GridItem, GridLayout} from 'vue3-grid-layout-next';
 import {useRoute} from "vue-router";
-import {data, options, options2} from "../../modules/utils";
+import {data, optionsStr, replaceFunctions} from "../../modules/utils";
 import ChartBlueprint from "./components/chart/ChartBlueprint.vue";
 
 const dashboardStore = useDashboardStore();
@@ -22,21 +22,11 @@ const dashboardData = ref({
   title: 'Дашборд 1',
   items: [
     {
-      id: 1,
-      type: 'chart',
-      title: '123',
-      data: data,
-      options: options,
-      styles: {},
-      width: 6,
-      height: 11,
-    },
-    {
       id: 2,
       type: 'chart',
       title: '123456',
       data: data,
-      options: options2,
+      options: optionsStr,
       styles: {},
     }
   ]
@@ -141,7 +131,7 @@ const applyFilters = () => {
             :i="item.i"
             @resized="onContainerResized"
         >
-          <component :is="item.component" :title="item.title" :data="item.data" :options="item.options" :styles="item.styles"></component>
+          <component :is="item.component" :title="item.title" :data="item.data" :options="replaceFunctions(item.options)" :styles="item.styles"></component>
         </grid-item>
       </grid-layout>
 

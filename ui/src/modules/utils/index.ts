@@ -1,102 +1,65 @@
-import moment from "moment/moment";
+import {
+    defaultLabelFormatter,
+    defaultTooltipFormatter,
+    percentFormatter,
+    percentLabelFormatter
+} from "./formatFuncs.ts";
 
-export function twoDigitsFormatter(val: any) {
-    if (Number(val)) {
-        return val.toFixed(2)
-    }
-    return val
+const funcMap = {
+    'percentFormatter': percentFormatter,
+    'percentLabelFormatter': percentLabelFormatter,
+    'defaultLabelFormatter': defaultLabelFormatter,
+    'defaultTooltipFormatter': defaultTooltipFormatter,
 }
 
-export function percentFormatter(val: any) {
-    if (Number(val)) {
-        return (val * 100).toFixed(2)
-    }
-    return val
+export function replaceFunctions (options: string) {
+    const optObject = JSON.parse(options);
+    replaceFunctionsImpl(optObject);
+    return optObject;
 }
 
-export function formatDuration(days: any, addSign?: any) {
-    if (days === null) {
-        return '--'
+function replaceFunctionHandler(root: any, key: string, parent: any, parentKey: string) {
+    if (typeof root[key] === 'string' && root[key].startsWith('fn_') && key !== 'fn') {
+        const handler = root[key].replace('fn_', '') as string;
+
+        if (typeof funcMap[handler] === 'string') {
+            root[key] = new Function(('return ' + funcMap[handler]).replace('\n', ''))();
+        } else {
+            root[key] = funcMap[handler];
+        }
+    } else if (typeof root[key] === 'string' && root[key].startsWith('fn_') && key === 'fn') {
+        const handler = root[key].replace('fn_', '');
+
+        if (typeof funcMap[handler] === 'string') {
+            root[key] = new Function('return ' + funcMap[handler]).replace('\n', '')().apply(this, root['params']);
+        } else {
+            parent[parentKey] = funcMap[handler].call(this, root['params']);
+        }
+    } else if (typeof root[key] === 'object') {
+        replaceFunctionsImpl(root[key], root, key)
     }
-    const isNegative = days < 0
-    let mm = days * 1440
-    mm *= isNegative ? -1 : 1
-    let HH = Math.floor(mm / 60)
-    mm = Math.round(mm - HH * 60)
-    if (mm === 60) {
-        mm = 0
-        HH++
-    }
-    return (isNegative ? '-' : addSign ? '+' : '') + HH + ':' + (mm < 10 ? '0' + mm : mm)
 }
 
-export function timeFormatter(params: any) {
-    let result = `${params && params[0] ? params[0].axisValueLabel : ''}<br/>`
-    for (const data of params.sort((a: any, b: any) => (a.data > b.data ? -1 : 1))) {
-        result += `${data.marker} ${data.seriesName} <strong>${formatDuration(data.data)}</strong><br/>`
+export function replaceFunctionsImpl(root: any, parent = null, parentKey = null) {
+    if (typeof root === 'function') {
+        throw new Error('Functions are not allowed');
     }
-    return result
-}
 
-export function defaultTooltipFormatter(seriesTypes: string[]) {
-    return function (params: any) {
-        let result = `${params && params[0] ? params[0].axisValueLabel : ''}<br/>`
-        for (const [index, data] of params.entries()) {
-            if (seriesTypes[index] === 'time') {
-                result += `${data.marker} ${data.seriesName} <strong>${formatDuration(data.data)}</strong><br/>`
-            } else if (seriesTypes[index] === 'percent') {
-                result += `${data.marker} ${data.seriesName} <strong>${(Number(data.data) * 100).toFixed(2)}%</strong><br/>`
-            } else if (seriesTypes[index] === 'percent-sign') {
-                result += `${data.marker} ${data.seriesName} <strong>${data.data ? data.data : 0}%</strong><br/>`
-            } else {
-                result += `${data.marker} ${data.seriesName} <strong>${Number(data.data).toLocaleString()}</strong><br/>`
+    if (typeof root === 'object') {
+        if (Array.isArray(root)) {
+            for (let r of root) {
+                if (typeof r === 'object') {
+                    for (let key in r) {
+                        replaceFunctionHandler(r, key, parent, parentKey!)
+                    }
+                }
+            }
+        } else {
+            for (let key in root) {
+                replaceFunctionHandler(root, key, parent, parentKey!)
             }
         }
-        return result
     }
-}
-
-export function sortValuesFormatter(params: any) {
-    let result = `${params && params[0] ? params[0].axisValueLabel : ''}<br/>`
-    for (const data of params.sort((a: any, b: any) => (a.data > b.data ? -1 : 1))) {
-        result += `${data.marker} ${data.seriesName} <strong>${data.data}</strong><br/>`
-    }
-    return result
-}
-
-export function firstCapitalLetter(str: string) {
-    return str.charAt(0).toUpperCase()
-}
-
-export function calcMinValuePercent(chartData: any, field: string, options: any, axisId: number) {
-    let min = Number.MAX_VALUE, max = Number.MIN_VALUE;
-    for (const d of chartData.value) {
-        min = Math.min(d[field], min)
-        max = Math.max(d[field], max)
-    }
-    options.value.yAxis[axisId].min = ((min - ((max - min) * 0.1)) * 100).toFixed(2);
-}
-
-export function calcMinValue(chartData: any, field: string, options: any, axisId: number) {
-    let min = Number.MAX_VALUE, max = Number.MIN_VALUE;
-    for (const d of chartData.value) {
-        min = Math.min(d[field], min)
-        max = Math.max(d[field], max)
-    }
-    options.value.yAxis[axisId].min = (min - ((max - min) * 0.1)).toFixed(2);
-}
-
-export function calcMinValueTime(data: any, field: string, options: any, axisId: number) {
-    let min = Number.MAX_VALUE, max = Number.MIN_VALUE;
-    for (const d of data) {
-        min = Math.min(d[field], min)
-        max = Math.max(d[field], max)
-    }
-    options.value.yAxis[axisId].min = min - ((max - min) * 0.1);
-}
-
-export function defaultLabelFormatter (val: string) {
-    return moment(val).format('DD.MM.YYYY')
 }
 
 export const data = [
@@ -186,136 +149,99 @@ export const data = [
     }
 ]
 
-export const options = {
-    id: 'availability',
-    grid: { containLabel: true, x: '7%', y: '7%', x2: '5%', y2: '7%' },
-    labels: [
+export const optionsStr = `{
+    "id": "availability",
+    "grid": {
+        "containLabel": true,
+        "x": "7%",
+        "y": "7%",
+        "x2": "5%",
+        "y2": "7%"
+    },
+    "labels": [
         {
-            type: 'line',
-            title: 'Значение',
-            display: 'Доступность',
-            formatter: (val: number) => {
-                if (Number(val)) {
-                    return (val * 100).toFixed(2)
-                }
-                return val
-            },
+            "type": "line",
+            "title": "Значение",
+            "display": "Доступность",
+            "formatter": "fn_percentFormatter"
         },
         {
-            yAxisID: 1,
-            type: 'bar',
-            title: 'Всего',
-            display: 'Всего',
-            color: '#c0bdbd',
-            opacity: 0.5,
-        },
+            "yAxisID": 1,
+            "type": "bar",
+            "title": "Всего",
+            "display": "Всего",
+            "color": "#c0bdbd",
+            "opacity": 0.5
+        }
     ],
-    labelFormatter: (val: string) => {
-        return moment(val).format('DD.MM.YYYY')
-    },
-    yAxis: [
+    "labelFormatter": "fn_defaultLabelFormatter",
+    "yAxis": [
         {
-            type: 'value',
-            position: 'left',
-            name: 'Доступность',
-            nameLocation: 'middle',
-            nameGap: 70,
-            axisLabel: {
-                formatter: (val: number) => {
-                    return val + '%'
-                },
+            "type": "value",
+            "position": "left",
+            "name": "Доступность",
+            "nameLocation": "middle",
+            "nameGap": 70,
+            "axisLabel": {
+                "formatter": "fn_percentLabelFormatter"
             },
-            min: 'dataMin',
+            "min": "dataMin"
         },
         {
-            type: 'value',
-            position: 'right',
-            splitLine: {
-                show: false,
+            "type": "value",
+            "position": "right",
+            "splitLine": {
+                "show": false
             },
-            axisLabel: {
-                show: false,
-            },
-        },
+            "axisLabel": {
+                "show": false
+            }
+        }
     ],
-    xAxis: {
-        field: 'Дата',
-        type: 'category',
+    "xAxis": {
+        "field": "Дата",
+        "type": "category"
     },
-    tooltip: {
-        trigger: 'axis',
-        cross: true,
-        axisPointer: {
-            type: 'shadow',
+    "tooltip": {
+        "trigger": "axis",
+        "cross": true,
+        "axisPointer": {
+            "type": "shadow"
         },
-        formatter: defaultTooltipFormatter(['default', 'percent-sign']),
+        "formatter": {
+            "fn": "fn_defaultTooltipFormatter",
+            "params": [
+                "default",
+                "percent-sign"
+            ]
+        }
     },
-    legend: {},
-}
+    "legend": {}
+}`;
 
-export const options2 = {
-    id: 'availability2',
-    grid: { containLabel: true, x: '7%', y: '7%', x2: '5%', y2: '7%' },
-    labels: [
-        {
-            type: 'line',
-            title: 'Значение',
-            display: 'Доступность',
-            formatter: (val: number) => {
-                if (Number(val)) {
-                    return (val * 100).toFixed(2)
-                }
-                return val
-            },
-        },
-        {
-            yAxisID: 1,
-            type: 'bar',
-            title: 'Всего',
-            display: 'Всего',
-            color: '#c0bdbd',
-            opacity: 0.5,
-        },
-    ],
-    labelFormatter: (val: string) => {
-        return moment(val).format('DD.MM.YYYY')
+export const optionsBlueprint = `{
+    "id": "availability",
+    "grid": {
+        "containLabel": true,
+        "x": "7%",
+        "y": "7%",
+        "x2": "5%",
+        "y2": "7%"
     },
-    yAxis: [
-        {
-            type: 'value',
-            position: 'left',
-            name: 'Доступность',
-            nameLocation: 'middle',
-            nameGap: 70,
-            axisLabel: {
-                formatter: (val: number) => {
-                    return val + '%'
-                },
-            },
-            min: 'dataMin',
-        },
-        {
-            type: 'value',
-            position: 'right',
-            splitLine: {
-                show: false,
-            },
-            axisLabel: {
-                show: false,
-            },
-        },
-    ],
-    xAxis: {
-        field: 'Дата',
-        type: 'category',
+    "labels": [],
+    "labelFormatter": "fn_defaultLabelFormatter",
+    "yAxis": [],
+    "xAxis": {
+        "field": "Дата",
+        "type": "category"
     },
-    tooltip: {
-        trigger: 'axis',
-        cross: true,
-        axisPointer: {
-            type: 'shadow',
+    "tooltip": {
+        "trigger": "axis",
+        "cross": true,
+        "axisPointer": {
+            "type": "shadow"
         },
-        formatter: defaultTooltipFormatter(['default', 'percent-sign']),
+        "formatter": {}
     },
-    legend: {},
-}
+    "legend": {}
+}`;

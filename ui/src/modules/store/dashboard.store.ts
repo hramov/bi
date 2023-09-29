@@ -16,7 +16,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
 
     const getAvailability = async (period: number) => {
-        console.log(period);
         return [
             {
                 "Дата": "2023-06-26T00:00:00.000Z",
