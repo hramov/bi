@@ -52,23 +52,25 @@ function eChartsMapper(options: any): any {
         legend: {}
     }
 
+    result.yAxis = [{
+        type: "value",
+        position: "left",
+        yAxisID: options.y[0].id,
+        name: options.y[0].title,
+        nameLocation: "middle",
+        nameGap: 70,
+        axisLabel: {
+            formatter: options.y.fn,
+        },
+        min: "dataMin"
+    }];
+
     for (const y of options.y) {
-        result.yAxis.push({
-            type: "value",
-            position: "left",
-            yAxisID: y.id,
-            name: y.title,
-            nameLocation: "middle",
-            nameGap: 70,
-            axisLabel: {
-                formatter: y.fn,
-            },
-            min: "dataMin"
-        });
 
         result.labels.push({
+            yAxisID: 0,
             type: y.type,
-            title: y.yAxis,
+            title: y.yField,
             display: y.title,
             formatter: y.fn
         });

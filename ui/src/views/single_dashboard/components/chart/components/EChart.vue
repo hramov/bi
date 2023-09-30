@@ -21,7 +21,7 @@ function buildChart() {
     if (props.options.labelFormatter) {
       labels.add(props.options.labelFormatter(row[props.options.xAxis.field]))
     } else {
-      labels.add(row[props.options.axis.x.field])
+      labels.add(row[props.options.xAxis.field])
     }
 
     for (let col in row) {
@@ -55,6 +55,8 @@ function buildChart() {
     datasets: Array.from(datasets.values()),
     datasetsLabels: Array.from(datasets.keys()),
   }
+
+  console.log(chartData.value)
 }
 
 const dialog = ref(false)

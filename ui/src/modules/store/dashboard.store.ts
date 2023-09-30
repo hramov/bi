@@ -13,7 +13,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
 
     const getDashboard = async (id: number) => {
-        dashboard.value = await ApiManager.get('/dashboards/' + id);
+        // dashboard.value = await ApiManager.get('/dashboards/' + id);
+        dashboard.value = dashboards.value[0];
     }
 
     const getItemById = async (id: number) => {

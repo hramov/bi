@@ -33,6 +33,7 @@ const dashboardData = ref({
 });
 
 onMounted(async () => {
+  await dashboardStore.getDashboard(1);
   await dashboardStore.getAvailableTypes();
   await dashboardStore.getItemById(1);
   let counter = 0;

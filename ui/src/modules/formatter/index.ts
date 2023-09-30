@@ -13,6 +13,7 @@ export const funcMap = {
 } as any;
 
 export function replaceFunctions (options: string) {
+    if (!options) return {};
     const optObject = JSON.parse(options);
     replaceFunctionsImpl(optObject);
     return optObject;
