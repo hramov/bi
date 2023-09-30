@@ -3,9 +3,12 @@ package dashboards
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/hramov/gvc-bi/backend/internal/repository"
+	"github.com/hramov/gvc-bi/backend/pkg/utils"
 	"net/http"
+	"strconv"
 )
 
 type Handler struct {
@@ -23,6 +26,9 @@ func (h *Handler) Register(r chi.Router) {
 	r.Get("/", h.get)
 	r.Get("/types", h.getAvailableTypes)
 	r.Get("/{id}", h.getById)
+	r.Get("/item/{id}", h.getItemById)
+	r.Post("/item", h.createItem)
+	r.Put("/item/{id}", h.updateItem)
 	r.Post("/", h.create)
 	r.Put("/", h.update)
 	r.Delete("/", h.delete)
@@ -74,6 +80,72 @@ func (h *Handler) getById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(rawData)
+}
+
+func (h *Handler) getItemById(w http.ResponseWriter, r *http.Request) {
+	rawId := chi.URLParam(r, "id")
+	if rawId == "" {
+		utils.SendError(http.StatusBadRequest, "need to pass id parameter", w)
+		return
+	}
+
+	id, err := strconv.Atoi(rawId)
+	if err != nil {
+		utils.SendError(http.StatusBadRequest, fmt.Sprintf("wrong id format: %v", err.Error()), w)
+		return
+	}
+
+	data, err := h.Repository.GetItemById(id)
+	if err != nil {
+		utils.SendError(http.StatusInternalServerError, err.Error(), w)
+		return
+	}
+
+	utils.SendResponse(http.StatusOK, data, w)
+}
+
+func (h *Handler) createItem(w http.ResponseWriter, r *http.Request) {
+	body, err := utils.GetBody[repository.Item](r)
+	if err != nil {
+		utils.SendError(http.StatusBadRequest, fmt.Sprintf("wrong body format: %v", err.Error()), w)
+		return
+	}
+
+	id, err := h.Repository.CreateItem(body)
+	if err != nil {
+		utils.SendError(http.StatusInternalServerError, fmt.Sprintf("cannot save data to database: %v", err.Error()), w)
+		return
+	}
+
+	utils.SendResponse(http.StatusCreated, id, w)
+}
+
+func (h *Handler) updateItem(w http.ResponseWriter, r *http.Request) {
+	rawId := chi.URLParam(r, "id")
+	if rawId == "" {
+		utils.SendError(http.StatusBadRequest, "need to pass id parameter", w)
+		return
+	}
+
+	id, err := strconv.Atoi(rawId)
+	if err != nil {
+		utils.SendError(http.StatusBadRequest, fmt.Sprintf("wrong id format: %v", err.Error()), w)
+		return
+	}
+
+	body, err := utils.GetBody[repository.Item](r)
+	if err != nil {
+		utils.SendError(http.StatusBadRequest, fmt.Sprintf("wrong body format: %v", err.Error()), w)
+		return
+	}
+
+	updatedId, err := h.Repository.UpdateItem(body, id)
+	if err != nil {
+		utils.SendError(http.StatusInternalServerError, fmt.Sprintf("cannot fetch data from database: %v", err.Error()), w)
+		return
+	}
+
+	utils.SendResponse(http.StatusCreated, updatedId, w)
 }
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {

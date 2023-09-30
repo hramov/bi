@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import ChartBlueprint from "../../chart/ChartBlueprint.vue";
 import {useDatasourceStore} from "../../../../../modules/store/datasource.store.ts";
-import ApiManager from "../../../../../modules/api/api.ts";
+import ApiManager from "../../../../../modules/api";
 
 const store = useDatasourceStore();
 

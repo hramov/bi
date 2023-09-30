@@ -1,11 +1,12 @@
 import {defineStore} from "pinia";
 import {ref} from "vue";
-import ApiManager from "../api/api.ts";
+import ApiManager from "../api";
 
 export const useDashboardStore = defineStore('dashboard', () => {
 
     const availableTypes = ref([]);
     const dashboard = ref({});
+    const dashboards = ref([] as any);
 
     const getAvailableTypes = async () => {
         availableTypes.value = await ApiManager.get('/dashboards/types');
@@ -13,6 +14,19 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     const getDashboard = async (id: number) => {
         dashboard.value = await ApiManager.get('/dashboards/' + id);
+    }
+
+    const getItemById = async (id: number) => {
+       return ApiManager.get('/dashboards/item/' + id);
+    }
+
+    const getDashboards = async () => {
+        dashboards.value = [{
+            id: 1,
+            title: 'Показатели филиала',
+            description: 'Показатели уровня ОАО РЖД',
+            last_updated: new Date(),
+        }]
     }
 
     const getAvailability = async (period: number) => {
@@ -104,10 +118,23 @@ export const useDashboardStore = defineStore('dashboard', () => {
         ]
     }
 
+    const saveChart = async (options: any) => {
+        const result = await ApiManager.post('/dashboards/item', options);
+        if (result.data) {
+            return result.data;
+        }
+        return null;
+    }
+
     return {
         availableTypes,
+        dashboards,
+        dashboard,
         getAvailableTypes,
         getDashboard,
+        getDashboards,
         getAvailability,
+        saveChart,
+        getItemById,
     }
 });

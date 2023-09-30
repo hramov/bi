@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {useAppStore} from "../../../modules/store/app.store.ts";
+import { useAppStore } from "../../../modules/store/app.store";
 
 const emit = defineEmits(['drawer']);
 const props = defineProps(['title'])

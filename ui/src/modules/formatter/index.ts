@@ -3,14 +3,14 @@ import {
     defaultTooltipFormatter,
     percentFormatter,
     percentLabelFormatter
-} from "./formatFuncs.ts";
+} from "./formatFuncs";
 
-const funcMap = {
-    'percentFormatter': percentFormatter,
-    'percentLabelFormatter': percentLabelFormatter,
-    'defaultLabelFormatter': defaultLabelFormatter,
-    'defaultTooltipFormatter': defaultTooltipFormatter,
-}
+export const funcMap = {
+    'fn_percentFormatter': percentFormatter,
+    'fn_percentLabelFormatter': percentLabelFormatter,
+    'fn_defaultLabelFormatter': defaultLabelFormatter,
+    'fn_defaultTooltipFormatter': defaultTooltipFormatter,
+} as any;
 
 export function replaceFunctions (options: string) {
     const optObject = JSON.parse(options);
@@ -20,27 +20,26 @@ export function replaceFunctions (options: string) {
 
 function replaceFunctionHandler(root: any, key: string, parent: any, parentKey: string) {
     if (typeof root[key] === 'string' && root[key].startsWith('fn_') && key !== 'fn') {
-        const handler = root[key].replace('fn_', '') as string;
+        const handler = root[key] as string;
 
         if (typeof funcMap[handler] === 'string') {
-            root[key] = new Function(('return ' + funcMap[handler]).replace('\n', ''))();
+            root[key] = new Function('return ' + funcMap[handler].replace('\n', ''))();
         } else {
             root[key] = funcMap[handler];
         }
     } else if (typeof root[key] === 'string' && root[key].startsWith('fn_') && key === 'fn') {
-        const handler = root[key].replace('fn_', '');
-
+        const handler = root[key];
         if (typeof funcMap[handler] === 'string') {
-            root[key] = new Function('return ' + funcMap[handler]).replace('\n', '')().apply(this, root['params']);
+            root[key] = new Function('return ' + funcMap[handler].replace('\n', ''))().apply(null, root['params']);
         } else {
-            parent[parentKey] = funcMap[handler].call(this, root['params']);
+            parent[parentKey] = funcMap[handler].call(null, root['params']);
         }
     } else if (typeof root[key] === 'object') {
         replaceFunctionsImpl(root[key], root, key)
     }
 }
 
-export function replaceFunctionsImpl(root: any, parent = null, parentKey = null) {
+export function replaceFunctionsImpl(root: any, parent = null, parentKey = '') {
     if (typeof root === 'function') {
         throw new Error('Functions are not allowed');
     }
@@ -215,33 +214,6 @@ export const optionsStr = `{
                 "percent-sign"
             ]
         }
-    },
-    "legend": {}
-}`;
-
-export const optionsBlueprint = `{
-    "id": "availability",
-    "grid": {
-        "containLabel": true,
-        "x": "7%",
-        "y": "7%",
-        "x2": "5%",
-        "y2": "7%"
-    },
-    "labels": [],
-    "labelFormatter": "fn_defaultLabelFormatter",
-    "yAxis": [],
-    "xAxis": {
-        "field": "Дата",
-        "type": "category"
-    },
-    "tooltip": {
-        "trigger": "axis",
-        "cross": true,
-        "axisPointer": {
-            "type": "shadow"
-        },
-        "formatter": {}
     },
     "legend": {}
 }`;

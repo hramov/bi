@@ -13,7 +13,7 @@ const loading = ref(false);
 </script>
 
 <template>
-  <Chart :key="options.yAxis[0].min" :title="props.title" :data="chartData" :options="options" :styles="props.styles" :loading="loading" />
+  <Chart :key="options.yAxis[0].min" :title="props.title" :data="chartData" :options="options" :styles="props.styles" :loading="loading"/>
 </template>
 
 <style scoped></style>

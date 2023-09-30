@@ -1,6 +1,6 @@
 import {defineStore} from "pinia";
 import {ref} from "vue";
-import ApiManager from "../api/api";
+import ApiManager from "../api";
 
 export const useDatasourceStore = defineStore('datasource', () => {
 

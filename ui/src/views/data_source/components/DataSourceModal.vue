@@ -2,7 +2,7 @@
 
 import CreateModal from "../../layout/components/CreateModal.vue";
 import {computed, ref, watch} from "vue";
-import ApiManager from "../../../modules/api/api.ts";
+import ApiManager from "../../../modules/api";
 import {useDatasourceStore} from "../../../modules/store/datasource.store.ts";
 
 const props = defineProps(['dialog', 'data']);

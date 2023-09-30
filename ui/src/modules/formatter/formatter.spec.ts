@@ -1,4 +1,4 @@
-import {optionsStr, replaceFunctions} from "./index.ts";
+import {optionsStr, replaceFunctions} from ".";
 
 test('Replace Function', () => {
     const result = replaceFunctions(optionsStr);
