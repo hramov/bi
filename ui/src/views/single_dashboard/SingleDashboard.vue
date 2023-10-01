@@ -41,7 +41,11 @@ onMounted(async () => {
   for (const item of store.dashboard.items) {
     if (item.item_type === 1) {
       layout.value.push({
-        x: counter * (item.width || 6), y: 0, w: item.width || 6, h: item.height || 11, i: item.id,
+        x: counter * (item.width || 6),
+        y: 0,
+        w: item.width || 6,
+        h: item.height || 11,
+        i: item.id,
         component: shallowRef(ChartBlueprint),
         title: item.title,
         data: await getDataForRow(item),
@@ -101,13 +105,38 @@ const applyFilters = () => {
     </template>
 
     <template v-slot:content>
-      <grid-layout :layout="layout" :col-num="12" :row-height="30" :is-draggable="true" :is-resizable="true"
-        :is-mirrored="false" :vertical-compact="true" :margin="[10, 10]" :use-css-transforms="true">
-        <grid-item style="touch-action: none; min-width: 500px; min-height: 350px" v-for="item in layout" :key="item.i"
-          :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :min-w="3" :min-h="8" :max-w="6" :max-h="11"
-          @resized="onContainerResized" @container-resized="onContainerResized">
-          <component :is="item.component" :title="item.title" :data="item.data" :options="replaceFunctions(item.options)"
-            :styles="item.styles"></component>
+      <grid-layout
+          :layout="layout"
+          :col-num="12"
+          :row-height="30"
+          :is-draggable="true"
+          :is-resizable="true"
+          :is-mirrored="false"
+          :vertical-compact="true"
+          :margin="[10, 10]"
+          :use-css-transforms="true">
+        <grid-item
+            style="touch-action: none; min-width: 500px; min-height: 350px"
+            v-for="item in layout"
+            :key="item.i"
+            :x="item.x"
+            :y="item.y"
+            :w="item.w"
+            :h="item.h"
+            :i="item.i"
+            :min-w="3"
+            :min-h="8"
+            :max-w="6"
+            :max-h="11"
+            @resized="onContainerResized"
+            @container-resized="onContainerResized">
+          <component
+              :is="item.component"
+              :title="item.title"
+              :data="item.data"
+              :options="replaceFunctions(item.options)"
+              :styles="item.styles"
+          ></component>
         </grid-item>
       </grid-layout>
 
