@@ -41,8 +41,8 @@ onMounted(async () => {
   for (const item of store.dashboard.items) {
     if (item.item_type === 1) {
       layout.value.push({
-        x: counter * (item.width || 6),
-        y: 0,
+        x: (counter % 2) * (item.width || 6),
+        y: (Math.abs((counter - 1)) % 2) * (item.width || 11),
         w: item.width || 6,
         h: item.height || 11,
         i: item.id,
@@ -55,6 +55,8 @@ onMounted(async () => {
     }
     counter++;
   }
+
+  console.log(layout.value)
   await nextTick(() => onContainerResized());
 });
 
