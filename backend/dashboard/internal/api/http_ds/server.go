@@ -6,29 +6,30 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http_ds/handler_ds"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/connections"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/repository"
-	"log"
 	"net/http"
 )
 
 type Server struct {
-	port int
-	db   *sql.DB
+	port   int
+	db     *sql.DB
+	logger internal.Logger
 }
 
-func New(port int, db *sql.DB) *Server {
-	return &Server{port: port, db: db}
+func New(port int, db *sql.DB, logger internal.Logger) *Server {
+	return &Server{port: port, db: db, logger: logger}
 }
 
 func (s *Server) registerHandlers(r chi.Router) {
 	dsRepo := repository.DatasourceRepository{Db: s.db}
-	h := handler_ds.New(dsRepo)
+	h := handler_ds.New(dsRepo, s.logger)
 	r.Route("/ds", h.Register)
 }
 
-func (s *Server) Start(ctx context.Context) {
+func (s *Server) Start(ctx context.Context) error {
 	r := chi.NewRouter()
 
 	r.Use(cors.Handler(cors.Options{
@@ -43,9 +44,9 @@ func (s *Server) Start(ctx context.Context) {
 	r.Route("/api", s.registerHandlers)
 
 	go func() {
-		log.Println("starting datasource server")
+		s.logger.Info("starting datasource server")
 		if err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r); err != nil {
-			log.Println(fmt.Sprintf("cannot start datasource server: %v", err))
+			s.logger.Error(fmt.Sprintf("cannot start datasource server: %v", err))
 			return
 		}
 	}()
@@ -53,7 +54,7 @@ func (s *Server) Start(ctx context.Context) {
 	dsRepo := repository.DatasourceRepository{Db: s.db}
 	ds, err := dsRepo.Get()
 	if err != nil {
-		log.Fatalln(err.Error())
+		return err
 	}
 
 	var rc []connections.RawConnection
@@ -75,15 +76,18 @@ func (s *Server) Start(ctx context.Context) {
 	}
 
 	if len(errStr) > 0 {
-		log.Printf("cannot connect to some data sources: %v", errStr)
+		s.logger.Error(fmt.Sprintf("cannot connect to some data sources: %v", errStr))
 	}
 
 	<-ctx.Done()
-	log.Println(fmt.Sprintf("starting graceful shutdown for datasource server"))
+	s.logger.Info(fmt.Sprintf("starting graceful shutdown for datasource server"))
 	err = s.StopServer()
 	if err != nil {
-		log.Println(fmt.Sprintf("cannot stop datasource server"))
+		s.logger.Error(fmt.Sprintf("cannot stop datasource server"))
+		return err
 	}
+
+	return nil
 }
 
 func (s *Server) StopServer() error {

@@ -5,7 +5,7 @@ import (
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http_ds"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/database/postgres"
-	"log"
+	"github.com/hramov/gvc-bi/backend/dashboard/pkg/logger"
 	"os"
 	"os/signal"
 )
@@ -13,6 +13,8 @@ import (
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
+
+	l := logger.New("dashboard", logger.Debug)
 
 	pg, err := postgres.New(&postgres.Options{
 		Host:     "localhost",
@@ -24,12 +26,17 @@ func main() {
 	}, "")
 
 	if err != nil {
-		log.Fatalln(err.Error())
+		l.Error(err.Error())
+		os.Exit(1)
 	}
 
-	s := http.New(3010, pg)
+	s := http.New(3010, pg, l)
 	go s.Start(ctx)
 
-	dsServer := http_ds.New(3011, pg)
-	dsServer.Start(ctx)
+	dsServer := http_ds.New(3011, pg, l)
+	err = dsServer.Start(ctx)
+	if err != nil {
+		l.Error(err.Error())
+		os.Exit(0)
+	}
 }

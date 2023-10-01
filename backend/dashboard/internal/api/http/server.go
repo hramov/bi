@@ -6,28 +6,31 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http/handlers/dashboards"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http/handlers/datasource"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http/handlers/users"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/repository"
-	"log"
 	"net/http"
 )
 
 type Server struct {
-	db   *sql.DB
-	port int
+	port   int
+	db     *sql.DB
+	logger internal.Logger
 }
 
-func New(port int, db *sql.DB) *Server {
-	return &Server{port: port, db: db}
+func New(port int, db *sql.DB, logger internal.Logger) *Server {
+	return &Server{port: port, db: db, logger: logger}
 }
 
 func (s *Server) registerHandlers(r chi.Router) {
-	u := users.New(s.db)
+	userRepo := &repository.UsersRepository{Db: s.db}
+	u := users.New(userRepo, s.logger)
 	r.Route("/users", u.Register)
 
-	d := dashboards.New(s.db)
+	dashRepo := &repository.DashboardsRepository{Db: s.db}
+	d := dashboards.New(dashRepo, s.logger)
 	r.Route("/dashboards", d.Register)
 
 	dsRepo := &repository.DatasourceRepository{Db: s.db}
@@ -47,24 +50,21 @@ func (s *Server) Start(ctx context.Context) {
 		MaxAge:           300,
 	}))
 
-	fs := http.FileServer(http.Dir("static"))
-	r.Handle("/static/*", http.StripPrefix("/static/", fs))
-
 	r.Route("/api", s.registerHandlers)
 
 	go func() {
-		log.Println("starting server")
+		s.logger.Info("starting server")
 		if err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r); err != nil {
-			log.Println(fmt.Sprintf("cannot start server: %v", err))
+			s.logger.Error(fmt.Sprintf("cannot start server: %v", err))
 			return
 		}
 	}()
 
 	<-ctx.Done()
-	log.Println(fmt.Sprintf("starting graceful shutdown for server"))
+	s.logger.Info(fmt.Sprintf("starting graceful shutdown for server"))
 	err := s.StopServer()
 	if err != nil {
-		log.Println(fmt.Sprintf("cannot stop server"))
+		s.logger.Error(fmt.Sprintf("cannot stop server"))
 	}
 }
 

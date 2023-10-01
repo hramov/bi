@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/repository"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/utils"
 	"net/http"
@@ -20,7 +21,8 @@ type Model struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	DeletedAt   time.Time `json:"deleted_at"`
-	Items       []*Item   `json:"items"`
+
+	Items []*Item `json:"items"`
 }
 
 type Item struct {
@@ -38,14 +40,24 @@ type Item struct {
 }
 
 type Handler struct {
-	Repository repository.DashboardsRepository
+	repo   Repository
+	logger internal.Logger
 }
 
-func New(db *sql.DB) *Handler {
-	repo := repository.DashboardsRepository{
-		Db: db,
-	}
-	return &Handler{Repository: repo}
+type Repository interface {
+	Get() ([]*repository.Model, error)
+	GetById(id int) (*repository.Model, error)
+	GetItemById(id int) (*repository.Item, error)
+	GetAvailableTypes() ([]*repository.TypeModel, error)
+	GetByDashId(id string) (*repository.Model, error)
+	Create(dto repository.Model) (*int, error)
+	Update(dto repository.Model, id int) (*int, error)
+	CreateItem(dto repository.Item) (*int, error)
+	UpdateItem(dto repository.Item, id int) (*int, error)
+}
+
+func New(repo Repository, logger internal.Logger) *Handler {
+	return &Handler{repo: repo, logger: logger}
 }
 
 func (h *Handler) Register(r chi.Router) {
@@ -61,7 +73,7 @@ func (h *Handler) Register(r chi.Router) {
 }
 
 func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
-	data, err := h.Repository.Get()
+	data, err := h.repo.Get()
 	if err != nil {
 		utils.SendError(http.StatusInternalServerError, err.Error(), w)
 		return
@@ -85,7 +97,7 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getAvailableTypes(w http.ResponseWriter, r *http.Request) {
-	data, err := h.Repository.GetAvailableTypes()
+	data, err := h.repo.GetAvailableTypes()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -107,7 +119,7 @@ func (h *Handler) getById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := h.Repository.GetByDashId(id)
+	data, err := h.repo.GetByDashId(id)
 	if err != nil {
 		utils.SendError(http.StatusInternalServerError, err.Error(), w)
 		return
@@ -148,7 +160,7 @@ func (h *Handler) getItemById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := h.Repository.GetItemById(id)
+	data, err := h.repo.GetItemById(id)
 	if err != nil {
 		utils.SendError(http.StatusInternalServerError, err.Error(), w)
 		return
@@ -164,7 +176,7 @@ func (h *Handler) createItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.Repository.CreateItem(repository.Item{
+	id, err := h.repo.CreateItem(repository.Item{
 		DashId:      body.DashId,
 		DataQueries: body.DataQueries,
 		ItemType:    body.ItemType,
@@ -204,7 +216,7 @@ func (h *Handler) updateItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updatedId, err := h.Repository.UpdateItem(body, id)
+	updatedId, err := h.repo.UpdateItem(body, id)
 	if err != nil {
 		utils.SendError(http.StatusInternalServerError, fmt.Sprintf("cannot fetch data from database: %v", err.Error()), w)
 		return
@@ -220,7 +232,7 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.Repository.Create(body)
+	id, err := h.repo.Create(body)
 	if err != nil {
 		utils.SendError(http.StatusInternalServerError, fmt.Sprintf("cannot save data to database: %v", err.Error()), w)
 		return

@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/connections"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/repository"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/database"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/utils"
-	"log"
 	"net/http"
 	"time"
 )
@@ -25,12 +25,14 @@ type CheckResult struct {
 }
 
 type Handler struct {
-	Repository repository.DatasourceRepository
+	repo   repository.DatasourceRepository
+	logger internal.Logger
 }
 
-func New(repository repository.DatasourceRepository) *Handler {
+func New(repo repository.DatasourceRepository, logger internal.Logger) *Handler {
 	return &Handler{
-		Repository: repository,
+		repo:   repo,
+		logger: logger,
 	}
 }
 
@@ -79,7 +81,7 @@ func (h *Handler) performQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	source, err := h.Repository.GetByCode(query.Source)
+	source, err := h.repo.GetByCode(query.Source)
 	if err != nil {
 		utils.SendError(http.StatusBadRequest, fmt.Sprintf("cannot find data source: %v", err.Error()), w)
 		return
@@ -101,13 +103,13 @@ func (h *Handler) performQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("executed query: %v\n", query.Query)
+	h.logger.Info(query.Query)
 
 	utils.SendResponse(http.StatusOK, utils.Jsonify(rows), w)
 }
 
 func (h *Handler) recallDataSources(w http.ResponseWriter, r *http.Request) {
-	ds, err := h.Repository.Get()
+	ds, err := h.repo.Get()
 	if err != nil {
 		utils.SendError(http.StatusInternalServerError, err.Error(), w)
 		return

@@ -1,21 +1,21 @@
 package users
 
 import (
-	"database/sql"
 	"github.com/go-chi/chi/v5"
-	"github.com/hramov/gvc-bi/backend/dashboard/internal/repository"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal"
 	"net/http"
 )
 
 type Handler struct {
-	Repository repository.UsersRepository
+	repo   Repository
+	logger internal.Logger
 }
 
-func New(db *sql.DB) *Handler {
-	repo := repository.UsersRepository{
-		Db: db,
-	}
-	return &Handler{Repository: repo}
+type Repository interface {
+}
+
+func New(repo Repository, logger internal.Logger) *Handler {
+	return &Handler{repo: repo, logger: logger}
 }
 
 func (h *Handler) Register(r chi.Router) {
