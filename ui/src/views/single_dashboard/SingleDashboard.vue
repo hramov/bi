@@ -56,7 +56,6 @@ onMounted(async () => {
     counter++;
   }
 
-  console.log(layout.value)
   await nextTick(() => onContainerResized());
 });
 
@@ -89,7 +88,7 @@ const applyFilters = () => {
 </script>
 
 <template>
-  <Page :title="store.dashboard.title">
+  <Page :title="{ title: store.dashboard.title, path: store.dashboard.title + '/' + store.dashboard.dash_id}">
     <template v-slot:toolbar>
       <v-btn color="green" style="margin-right: 20px">
         Добавить

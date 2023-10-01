@@ -6,9 +6,14 @@ export const useAppStore = defineStore('app', () => {
    const router = useRouter();
 
    const pagesMapper = {
-      'dashboards': 'Дашборды',
-      'dashboard': 'Дашборд',
-      'data_sources': 'Источники данных'
+      'dashboards': {
+         title: 'Дашборды',
+         path: '/dashboards',
+      },
+      'data_sources': {
+         title: 'Источники данных',
+         path: '/data_sources'
+      }
    }
 
    const sortOptions = [
@@ -31,7 +36,7 @@ export const useAppStore = defineStore('app', () => {
    ]
 
    const calcBreadcrumbs = computed(() => {
-      return Array.from(new Set(router.currentRoute.value.fullPath.split('/').filter(el => el != 1).map(el => el === "" ? "Главная" : pagesMapper[el]))).filter(el => el);
+      return Array.from(new Set(router.currentRoute.value.fullPath.split('/').filter(el => el != 'Главная').map(el => el === "" ? { title: 'Главная', path: '/'} : pagesMapper[el]))).filter(el => el);
    });
 
    return {
