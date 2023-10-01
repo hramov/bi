@@ -11,6 +11,8 @@ const styles = {
   ...props.styles,
 }
 
+const chartId = `chart-${Math.random()}`
+
 let myChart: any = null
 
 function buildChart() {
@@ -55,8 +57,6 @@ function buildChart() {
     datasets: Array.from(datasets.values()),
     datasetsLabels: Array.from(datasets.keys()),
   }
-
-  console.log(chartData.value)
 }
 
 const dialog = ref(false)
@@ -65,7 +65,7 @@ const seriesName = ref('')
 
 function drawChart() {
   buildChart();
-  const chartElement = document.getElementById(chartOptions.id);
+  const chartElement = document.getElementById(chartId);
   myChart = echarts.init(chartElement, 'dark')
   window.addEventListener('resize', () => {
     myChart.resize()
@@ -109,7 +109,7 @@ watch(
 </script>
 
 <template>
-  <div :id="chartOptions.id" style="width: 100%; height: calc(100% - 36px);"></div>
+  <div :id="chartId" style="width: 100%; height: calc(100% - 36px);"></div>
 </template>
 
 <style scoped></style>

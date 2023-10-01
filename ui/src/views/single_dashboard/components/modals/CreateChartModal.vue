@@ -4,7 +4,7 @@ import CreateModalFullScreen from "../../../layout/components/CreateModalFullScr
 import AddDataRowModal from "./components/AddDataRowModal.vue";
 import {chartMapper} from "../../../../modules/mapper";
 import {useDashboardStore} from "../../../../modules/store/dashboard.store.ts";
-const props = defineProps(['dialog']);
+const props = defineProps(['dialog', 'dash_id']);
 const emit = defineEmits(['close', 'save']);
 
 const store = useDashboardStore();
@@ -13,11 +13,11 @@ const model = ref({} as any);
 
 onMounted(() => {
   model.value = {
-    id: '',
-    type: 1,
+    container_id: '',
+    item_type: 1,
     title: '',
     description: '',
-    dashboard: 1,
+    dash_id: store.dashboard.dash_id,
     data: [],
     options: {
       x: {
@@ -26,15 +26,15 @@ onMounted(() => {
       },
       y: [] as any[],
     },
-    rawOptions: '',
-    dataQueries: {},
+    raw_options: '',
+    data_queries: {},
   }
 })
 
 const onSave = async () => {
   const mapped = chartMapper(model.value.options);
-  model.value.rawOptions = mapped.rawOptions;
-  model.value.dataQueries = mapped.dataQueries;
+  model.value.raw_options = mapped.rawOptions;
+  model.value.data_queries = mapped.dataQueries;
 
   const result = await store.saveChart(model.value);
   console.log(result);
@@ -57,10 +57,10 @@ const onSave = async () => {
             <v-text-field label="Название" v-model="model.title" />
           </v-col>
           <v-col cols="2">
-            <v-text-field label="Идентификатор" v-model="model.id" />
+            <v-text-field label="Идентификатор" v-model="model.container_id" />
           </v-col>
           <v-col cols="2">
-            <v-select :items="store.dashboards" label="Дашборд" v-model="model.dashboard" item-title="title" item-value="id" />
+            <v-select :items="store.dashboards" label="Дашборд" v-model="model.dash_id" item-title="title" item-value="dash_id" />
           </v-col>
         </v-row>
 

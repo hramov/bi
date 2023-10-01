@@ -8,9 +8,9 @@ const store = useDatasourceStore();
 const dashStore = useDashboardStore()
 
 onMounted(() => {
-  store.getSources()
-  store.getDrivers()
-  dashStore.getDashboards()
+  store.getSources();
+  store.getDrivers();
+  dashStore.getDashboards();
 });
 </script>
 

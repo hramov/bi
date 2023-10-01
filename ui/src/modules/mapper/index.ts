@@ -1,5 +1,4 @@
 import {CHART_TYPE, CHART_TYPES} from "../config/config";
-import {data} from "../formatter";
 
 export function chartMapper(options: any): any {
     switch(CHART_TYPE) {
@@ -81,7 +80,7 @@ function eChartsMapper(options: any): any {
         }
     }
     return {
-        rawOptions: JSON.stringify(result),
+        rawOptions: result,
         dataQueries: dataQueries,
     }
 }

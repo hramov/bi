@@ -1,23 +1,22 @@
 <script setup lang="ts">
 
 import CreateModal from "../../layout/components/CreateModal.vue";
-import {reactive} from "vue";
+import {ref} from "vue";
+import ApiManager from "../../../modules/api";
 const props = defineProps(['dialog']);
 const emit = defineEmits(['close', 'save']);
 
-const model = reactive({
-  title: '',
-  description: '',
-});
+const model = ref({} as any);
 
-const onSave = () => {
-  emit('save', model);
-  clear();
+const onSave = async () => {
+  const res = await ApiManager.post('/dashboards/', model.value);
+  if (res.status < 400) {
+    clear();
+  }
 }
 
 const clear = () => {
-  model.title = '';
-  model.description = '';
+  model.value = {};
 }
 
 </script>
@@ -29,6 +28,8 @@ const clear = () => {
         <v-text-field label="Название" v-model="model.title" />
 
         <v-textarea rows="3" type="textarea" label="Описание" v-model="model.description"></v-textarea>
+
+        <v-select label="Уровень доступа" v-model="model.access" />
       </v-form>
     </template>
 

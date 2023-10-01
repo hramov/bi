@@ -7,8 +7,8 @@ import {useRouter} from "vue-router";
 const props = defineProps(['dash']);
 const router = useRouter();
 
-const openSingleDashboard = (id: number) => {
-  router.push('/dashboards/' + id)
+const openSingleDashboard = (dash_id: string) => {
+  router.push('/dashboards/' + dash_id)
 }
 </script>
 
@@ -25,6 +25,9 @@ const openSingleDashboard = (id: number) => {
         Описание
       </th>
       <th class="text-center">
+        Создан
+      </th>
+      <th class="text-center">
         Последнее изменение
       </th>
       <th class="text-center">
@@ -37,22 +40,22 @@ const openSingleDashboard = (id: number) => {
         v-for="item in props.dash"
         :key="item.id"
         class="text-center clickable"
-        @click="openSingleDashboard(item.id)"
+        @click="openSingleDashboard(item.dash_id)"
     >
       <td>{{ item.title }}</td>
       <td>{{ item.description }}</td>
-      <td>{{ moment(item.last_updated).format(DateFormat) }}</td>
+      <td>{{ moment(item.created_at).format(DateFormat) }}</td>
+      <td>{{ moment(item.updated_at).year() > 2000 ? moment(item.updated_at).format(DateFormat) : '' }}</td>
       <td>
         <div class="actions">
           <v-btn variant="text" icon="mdi-dots-horizontal"></v-btn>
           <v-menu location="bottom" offset="0" activator="parent">
             <v-list>
-              <v-list-item
-                  v-for="(item, index) in []"
-                  :key="index"
-                  :value="index"
-              >
-                <v-list-item-title>{{ item }}</v-list-item-title>
+              <v-list-item>
+                <v-list-item-title>Доступ</v-list-item-title>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-title>Удалить</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>

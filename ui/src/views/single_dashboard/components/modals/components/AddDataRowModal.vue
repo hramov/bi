@@ -67,13 +67,11 @@ const deleteY = (rowId: number) => {
 
 const prepareChart = async () => {
   showType.value = '';
-  const mapped = chartMapper({ ...props.model.options, title: props.model.title, id: props.model.id});
-  props.model.rawOptions = replaceFunctions(mapped.rawOptions);
-  props.model.dataQueries = mapped.dataQueries;
+  const mapped = chartMapper({ ...props.model.options, title: props.model.title, id: props.model.container_id});
+  props.model.raw_options = replaceFunctions(mapped.rawOptions);
+  props.model.data_queries = mapped.dataQueries;
 
-  props.model.data = await getDataForAllRows(Object.values(props.model.dataQueries));
-
-  console.log(props.model)
+  props.model.data = await getDataForAllRows(Object.values(props.model.data_queries));
   showType.value = 'chart';
 }
 </script>
@@ -131,10 +129,10 @@ const prepareChart = async () => {
 
     <div style="width: 50%; height: 500px;">
       <ChartBlueprint
-          v-if="model.rawOptions && showType === 'chart'"
+          v-if="model.raw_options && showType === 'chart'"
           :title="model.title"
           :data="model.data"
-          :options="model.rawOptions"
+          :options="model.raw_options"
           :styles="{}"
       />
 

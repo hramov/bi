@@ -3,20 +3,21 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/google/uuid"
 	"time"
 )
 
 type Model struct {
-	Id          int    `json:"id"`
-	DashId      string `json:"dash_id"`
-	Title       string
-	Description string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	DeletedAt   time.Time
+	Id          int            `json:"id"`
+	DashId      string         `json:"dash_id"`
+	Title       string         `json:"title"`
+	Description sql.NullString `json:"description"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   sql.NullTime   `json:"updated_at"`
+	DeletedAt   sql.NullTime   `json:"deleted_at"`
+
+	Items string `json:"items"`
 }
 
 type TypeModel struct {
@@ -26,13 +27,15 @@ type TypeModel struct {
 }
 
 type Item struct {
-	Id          string         `json:"id"`
+	Id          int            `json:"id"`
 	DashId      string         `json:"dash_id"`
 	ItemType    int            `json:"type"`
 	Position    sql.NullString `json:"position"`
 	Title       string         `json:"title"`
 	Description sql.NullString `json:"description"`
-	Options     string         `json:"rawOptions"`
+	Options     any            `json:"raw_options"`
+	RawOptions  any            `json:"options"`
+	DataQueries any            `json:"data_queries"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   sql.NullTime   `json:"updated_at"`
 	DeletedAt   sql.NullTime   `json:"deleted_at"`
@@ -131,7 +134,17 @@ func (d *DashboardsRepository) GetAvailableTypes() ([]*TypeModel, error) {
 }
 
 func (d *DashboardsRepository) GetByDashId(id string) (*Model, error) {
-	query := `select * from dashboards where dash_id = $1`
+	query := `
+		select d.id, d.dash_id, d.title, d.description, 
+		       date_trunc('second', d.created_at) created_at, 
+		       date_trunc('second', d.updated_at) updated_at, 
+		       date_trunc('second', d.deleted_at) deleted_at,
+			   COALESCE(json_agg(di) FILTER (WHERE di.dash_id IS NOT NULL), '[]') AS items
+		from dashboards d
+		left join dashboard_items di on di.dash_id = d.dash_id
+		where d.dash_id = $1
+		group by d.id, d.dash_id, d.title, d.description, d.created_at, d.updated_at, d.deleted_at
+	`
 	params := []any{id}
 
 	row := d.Db.QueryRowContext(context.Background(), query, params...)
@@ -143,8 +156,8 @@ func (d *DashboardsRepository) GetByDashId(id string) (*Model, error) {
 		return nil, row.Err()
 	}
 
-	var model *Model
-	err := row.Scan(&model.Id, &model.DashId, &model.Title, &model.Description, &model.CreatedAt, &model.UpdatedAt, &model.DeletedAt)
+	model := &Model{}
+	err := row.Scan(&model.Id, &model.DashId, &model.Title, &model.Description, &model.CreatedAt, &model.UpdatedAt, &model.DeletedAt, &model.Items)
 	if err != nil {
 		return nil, err
 	}
@@ -152,43 +165,61 @@ func (d *DashboardsRepository) GetByDashId(id string) (*Model, error) {
 	return model, nil
 }
 
-func (d *DashboardsRepository) Create(dto Model) (*Model, error) {
+func (d *DashboardsRepository) Create(dto Model) (*int, error) {
 	query := `
 		insert into dashboards (title, description)
 		values ($1, $2)
+		returning id;
 	`
 	params := []any{dto.Title, dto.Description}
 
-	res, err := d.Db.ExecContext(context.Background(), query, params...)
+	row := d.Db.QueryRowContext(context.Background(), query, params...)
 
-	if err != nil {
+	var id int
+	if err := row.Scan(&id); err != nil {
 		return nil, err
 	}
 
-	lastId, err := res.LastInsertId()
-	if err != nil {
+	return &id, nil
+}
+
+func (d *DashboardsRepository) Update(dto Model, id int) (*int, error) {
+	query := `
+		update dashboards set
+		title = $1, description = $2, updated_at = now()
+		where id = $3
+		returning id
+	`
+	params := []any{dto.Title, dto.Description, id}
+
+	row := d.Db.QueryRowContext(context.Background(), query, params...)
+
+	var updatedId int
+	if err := row.Scan(&updatedId); err != nil {
 		return nil, err
 	}
 
-	row, err := d.GetById(int(lastId))
-	if err != nil {
-		return nil, err
-	}
-
-	return row, nil
+	return &updatedId, nil
 }
 
 func (d *DashboardsRepository) CreateItem(dto Item) (*int, error) {
 	query := `
-		insert into dashboard_items (dash_id, item_type, title, description, options)
-		values ($1, $2, $3, $4, $5)
+		insert into dashboard_items (dash_id, item_type, title, description, raw_options, data_queries)
+		values ($1, $2, $3, $4, $5, $6)
 		returning id
 	`
 
-	fmt.Println(dto)
+	options, err := json.Marshal(dto.Options)
+	if err != nil {
+		return nil, err
+	}
 
-	newId, _ := uuid.NewUUID()
-	params := []any{newId.String(), dto.ItemType, dto.Title, dto.Description, dto.Options}
+	dq, err := json.Marshal(dto.DataQueries)
+	if err != nil {
+		return nil, err
+	}
+
+	params := []any{dto.DashId, dto.ItemType, dto.Title, dto.Description, options, dq}
 
 	row := d.Db.QueryRowContext(context.Background(), query, params...)
 
@@ -203,7 +234,7 @@ func (d *DashboardsRepository) CreateItem(dto Item) (*int, error) {
 func (d *DashboardsRepository) UpdateItem(dto Item, id int) (*int, error) {
 	query := `
 		update dashboard_items set
-		dash_id = $1, item_type = $2, title = $3, description = $4, options = $5
+		dash_id = $1, item_type = $2, title = $3, description = $4, raw_options = $5, updated_at = now()
 		where id = $6
 		returning id
 	`

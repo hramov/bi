@@ -4,47 +4,48 @@ import { nextTick, onMounted, ref, shallowRef } from "vue";
 import CreateChartModal from "./components/modals/CreateChartModal.vue";
 import { useDashboardStore } from "../../modules/store/dashboard.store";
 import { GridItem, GridLayout } from 'vue3-grid-layout-next';
-// import { useRoute } from "vue-router";
-import { data, optionsStr, replaceFunctions } from "../../modules/formatter";
+import { useRoute } from "vue-router";
+import { replaceFunctions } from "../../modules/formatter";
 import ChartBlueprint from "./components/chart/ChartBlueprint.vue";
+import ApiManager from "../../modules/api";
 
-const dashboardStore = useDashboardStore();
+const store = useDashboardStore();
 
-// const route = useRoute();
+const route = useRoute();
 
 const filterDrawer = ref(false);
 
 const layout = ref([] as any);
 
-const dashboardData = ref({
-  id: 1,
-  dash_id: '123',
-  title: 'Дашборд 1',
-  items: [
-    {
-      id: 2,
-      type: 'chart',
-      title: '123456',
-      data: data,
-      options: optionsStr,
-      styles: {},
+const getDataForRow = async (row: any) => {
+  const result = [];
+
+  const res = await ApiManager.performQuery(row.data_queries[row.raw_options.yAxis[0].yAxisID]);
+  if (Array.isArray(res)) {
+    for (const r of res) {
+      if (r.length > 2) {
+        result.push(JSON.parse(r))
+      }
     }
-  ]
-});
+  }
+
+  return result;
+}
 
 onMounted(async () => {
-  await dashboardStore.getDashboard(1);
-  await dashboardStore.getAvailableTypes();
-  await dashboardStore.getItemById(1);
+  await store.getDashboard(route.params.dashboard_id as string);
+  await store.getAvailableTypes();
+
   let counter = 0;
-  for (const item of dashboardData.value.items) {
-    if (item.type === 'chart') {
+
+  for (const item of store.dashboard.items) {
+    if (item.item_type === 1) {
       layout.value.push({
         x: counter * (item.width || 6), y: 0, w: item.width || 6, h: item.height || 11, i: item.id,
         component: shallowRef(ChartBlueprint),
         title: item.title,
-        data: item.data,
-        options: item.options,
+        data: await getDataForRow(item),
+        options: item.raw_options,
         styles: item.styles
       })
     }
@@ -75,10 +76,6 @@ const onContainerResized = () => {
   window.dispatchEvent(new Event('resize'))
 }
 
-// const retrieveFilters = () => {
-//
-// }
-
 const applyFilters = () => {
 
 }
@@ -86,13 +83,13 @@ const applyFilters = () => {
 </script>
 
 <template>
-  <Page title="Дашборд 1">
+  <Page :title="store.dashboard.title">
     <template v-slot:toolbar>
       <v-btn color="green" style="margin-right: 20px">
         Добавить
         <v-menu location="bottom" offset="0" activator="parent">
           <v-list>
-            <v-list-item v-for="item in dashboardStore.availableTypes" :key="item.id" :value="item.id"
+            <v-list-item v-for="item in store.availableTypes" :key="item.id" :value="item.id"
               @click="onMenuClick(item.name)">
               <v-list-item-title>{{ item.title }}</v-list-item-title>
             </v-list-item>
@@ -130,7 +127,7 @@ const applyFilters = () => {
     </template>
 
     <template v-slot:modals>
-      <CreateChartModal :dialog="createChartDialog" @close="onChartDialogClose" @save="onChartDialogSave" />
+      <CreateChartModal v-if="store.dashboard.dash_id" :dialog="createChartDialog" @close="onChartDialogClose" @save="onChartDialogSave" />
     </template>
   </Page>
 </template>
