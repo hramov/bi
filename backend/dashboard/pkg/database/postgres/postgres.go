@@ -2,8 +2,11 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	_ "github.com/lib/pq"
+	"log"
+	"time"
 )
 
 type Options struct {
@@ -26,21 +29,40 @@ func New(options *Options, dsn string) (*sql.DB, error) {
 	}
 
 	var db *sql.DB
-	var err error
+	var err error = errors.New("trying to connect to database")
 
-	if dsn != "" {
-		db, err = sql.Open("postgres", dsn)
-	} else {
-		db, err = sql.Open("postgres", p.formatDNS())
+	counter := 0
+
+	for err != nil {
+		time.Sleep(5 * time.Second)
+
+		if dsn != "" {
+			db, err = sql.Open("postgres", dsn)
+		} else {
+			db, err = sql.Open("postgres", p.formatDNS())
+		}
+
+		if err != nil {
+			log.Printf("cannot connect to postgres: %v\n", err)
+			counter++
+			if counter >= 5 {
+				return nil, fmt.Errorf("cannot pind postgres")
+			}
+			continue
+		}
+
+		err = db.Ping()
+
+		if err != nil {
+			log.Printf("cannot ping postgres: %v\n", err)
+			counter++
+			if counter >= 5 {
+				return nil, fmt.Errorf("cannot pind postgres")
+			}
+			continue
+		}
 	}
 
-	if err != nil {
-		return nil, fmt.Errorf("cannot connect to postgres: %v", err)
-	}
-	err = db.Ping()
-	if err != nil {
-		return nil, fmt.Errorf("cannot ping postgres: %v", err)
-	}
 	p.db = db
 	return db, nil
 }

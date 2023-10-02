@@ -226,13 +226,21 @@ func (h *Handler) updateItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
-	body, err := utils.GetBody[repository.Model](r)
+	body, err := utils.GetBody[Model](r)
 	if err != nil {
 		utils.SendError(http.StatusBadRequest, fmt.Sprintf("wrong body format: %v", err.Error()), w)
 		return
 	}
 
-	id, err := h.repo.Create(body)
+	id, err := h.repo.Create(repository.Model{
+		Id:     body.Id,
+		DashId: body.DashId,
+		Title:  body.Title,
+		Description: sql.NullString{
+			String: body.Description,
+			Valid:  true,
+		},
+	})
 	if err != nil {
 		utils.SendError(http.StatusInternalServerError, fmt.Sprintf("cannot save data to database: %v", err.Error()), w)
 		return

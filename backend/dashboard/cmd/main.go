@@ -6,34 +6,50 @@ import (
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http_ds"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/database/postgres"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/logger"
+	"github.com/joho/godotenv"
+	"log"
 	"os"
 	"os/signal"
+	"strconv"
 )
 
 func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file")
+	}
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
 
 	l := logger.New("dashboard", logger.Debug)
 
-	pg, err := postgres.New(&postgres.Options{
-		Host:     "localhost",
-		Port:     5432,
-		User:     "postgres",
-		Password: "postgres",
-		Database: "gvc_bi",
-		SslMode:  "disable",
-	}, "")
+	pg, err := postgres.New(nil, os.Getenv("PG_DSN"))
 
 	if err != nil {
 		l.Error(err.Error())
 		os.Exit(1)
 	}
 
-	s := http.New(3010, pg, l)
+	portStr := os.Getenv("DASHBOARD_PORT")
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		l.Error(err.Error())
+		os.Exit(1)
+	}
+
+	s := http.New(port, pg, l)
 	go s.Start(ctx)
 
-	dsServer := http_ds.New(3011, pg, l)
+	portStr = os.Getenv("DATA_SOURCE_PORT")
+	port, err = strconv.Atoi(portStr)
+	if err != nil {
+		l.Error(err.Error())
+		os.Exit(1)
+	}
+
+	dsServer := http_ds.New(port, pg, l)
 	err = dsServer.Start(ctx)
 	if err != nil {
 		l.Error(err.Error())
