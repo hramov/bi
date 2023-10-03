@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http"
-	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http_ds"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/http"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/database/postgres"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/logger"
 	"github.com/joho/godotenv"
@@ -40,19 +39,5 @@ func main() {
 	}
 
 	s := http.New(port, pg, appLogger)
-	go s.Start(ctx)
-
-	portStr = os.Getenv("DATA_SOURCE_PORT")
-	port, err = strconv.Atoi(portStr)
-	if err != nil {
-		appLogger.Error(err.Error())
-		os.Exit(1)
-	}
-
-	dsServer := http_ds.New(port, pg, appLogger)
-	err = dsServer.Start(ctx)
-	if err != nil {
-		appLogger.Error(err.Error())
-		os.Exit(0)
-	}
+	s.Start(ctx)
 }

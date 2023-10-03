@@ -39,22 +39,24 @@ const loadData = async () => {
 
   let counter = 0;
 
-  for (const item of store.dashboard.items) {
-    if (item.item_type === 1) {
-      layout.value.push({
-        x: (counter % 2) * (item.width || 6),
-        y: (Math.abs((counter - 1)) % 2) * (item.width || 11),
-        w: item.width || 6,
-        h: item.height || 11,
-        i: item.id,
-        component: shallowRef(ChartBlueprint),
-        title: item.title,
-        data: await getDataForRow(item),
-        options: item.options,
-        styles: item.styles
-      })
+  if (store.dashboard.items) {
+    for (const item of store.dashboard.items) {
+      if (item.item_type === 1) {
+        layout.value.push({
+          x: (counter % 2) * (item.width || 6),
+          y: (Math.abs((counter - 1)) % 2) * (item.width || 11),
+          w: item.width || 6,
+          h: item.height || 11,
+          i: item.id,
+          component: shallowRef(ChartBlueprint),
+          title: item.title,
+          data: await getDataForRow(item),
+          options: item.options,
+          styles: item.styles
+        })
+      }
+      counter++;
     }
-    counter++;
   }
 
   await nextTick(() => onContainerResized());

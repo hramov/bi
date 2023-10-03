@@ -1,6 +1,9 @@
 package dashboard
 
-import dashboards_dto_in "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/dto/in"
+import (
+	dashboards_dto_in "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/dto/in"
+	dashboard_entity "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/entity"
+)
 
 type Logger interface {
 	Debug(msg string)
@@ -10,10 +13,10 @@ type Logger interface {
 }
 
 type Repository interface {
-	Get() ([]*Dashboard, error)
-	GetItemById(id int) (*Item, error)
-	GetAvailableTypes() ([]*ItemType, error)
-	GetByDashId(id string) (*Dashboard, error)
+	Get() ([]*dashboard_entity.Dashboard, error)
+	GetItemById(id int) (*dashboard_entity.Item, error)
+	GetAvailableTypes() ([]*dashboard_entity.ItemType, error)
+	GetByDashId(id string) (*dashboard_entity.Dashboard, error)
 	Create(dto dashboards_dto_in.Dashboard) (*int, error)
 	Update(dto dashboards_dto_in.Dashboard, id int) (*int, error)
 	CreateItem(dto dashboards_dto_in.Item) (*int, error)
@@ -32,11 +35,11 @@ func NewService(repo Repository, logger Logger) *Service {
 	}
 }
 
-func (s *Service) Get() ([]*Dashboard, error) {
+func (s *Service) Get() ([]*dashboard_entity.Dashboard, error) {
 	return s.repo.Get()
 }
 
-func (s *Service) GetByDashId(id string) (*Dashboard, error) {
+func (s *Service) GetByDashId(id string) (*dashboard_entity.Dashboard, error) {
 	dash, err := s.repo.GetByDashId(id)
 	if err != nil {
 		s.logger.Error(err.Error())
@@ -52,7 +55,7 @@ func (s *Service) Update(dto dashboards_dto_in.Dashboard, id int) (*int, error) 
 	return s.repo.Update(dto, id)
 }
 
-func (s *Service) GetItemById(id int) (*Item, error) {
+func (s *Service) GetItemById(id int) (*dashboard_entity.Item, error) {
 	return s.repo.GetItemById(id)
 }
 
@@ -64,6 +67,6 @@ func (s *Service) UpdateItem(dto dashboards_dto_in.Item, id int) (*int, error) {
 	return s.repo.UpdateItem(dto, id)
 }
 
-func (s *Service) GetAvailableTypes() ([]*ItemType, error) {
+func (s *Service) GetAvailableTypes() ([]*dashboard_entity.ItemType, error) {
 	return s.repo.GetAvailableTypes()
 }

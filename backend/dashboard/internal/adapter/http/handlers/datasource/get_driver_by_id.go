@@ -1,0 +1,37 @@
+package datasource_handler
+
+import (
+	"fmt"
+	"github.com/go-chi/chi/v5"
+	data_source_dto_out "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/data_source/dto/out"
+	"github.com/hramov/gvc-bi/backend/dashboard/pkg/utils"
+	"net/http"
+	"strconv"
+)
+
+func (h *Handler) getDriverById(w http.ResponseWriter, r *http.Request) {
+	rawId := chi.URLParam(r, "id")
+	if rawId == "" {
+		utils.SendError(http.StatusBadRequest, "need to pass id parameter", w)
+		return
+	}
+
+	id, err := strconv.Atoi(rawId)
+	if err != nil {
+		utils.SendError(http.StatusBadRequest, fmt.Sprintf("wrong id format: %v", err.Error()), w)
+		return
+	}
+
+	driver, err := h.service.GetDriverById(id)
+	if err != nil {
+		utils.SendError(http.StatusInternalServerError, fmt.Sprintf("cannot fetch data from database: %v", err.Error()), w)
+		return
+	}
+	utils.SendResponse(http.StatusOK, &data_source_dto_out.Driver{
+		Id:          driver.Id,
+		Title:       driver.Title,
+		Code:        driver.Code,
+		DateCreated: driver.DateCreated,
+		DbNeed:      driver.DbNeed,
+	}, w)
+}
