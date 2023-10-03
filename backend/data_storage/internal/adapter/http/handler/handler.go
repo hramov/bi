@@ -46,6 +46,7 @@ func New(repo *data_source_repo.RepositoryImpl, logger Logger) *Handler {
 func (h *Handler) Register(r chi.Router) {
 	r.Post("/check", h.checkConnection)
 	r.Post("/perform", h.performQuery)
+	r.Post("/recall", h.recallDataSources)
 }
 
 func (h *Handler) checkConnection(w http.ResponseWriter, r *http.Request) {

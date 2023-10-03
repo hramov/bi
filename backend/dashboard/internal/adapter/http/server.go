@@ -13,6 +13,7 @@ import (
 	data_source_repo "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/postgresrepo/data_source"
 	user_repo "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/postgresrepo/user"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal/domain/data_source"
 
 	"net/http"
 )
@@ -45,7 +46,8 @@ func (s *Server) registerHandlers(r chi.Router) {
 	r.Route("/dashboards", d.Register)
 
 	dsRepo := data_source_repo.NewRepository(s.db)
-	ds := datasource_handler.New(dsRepo, s.logger)
+	dsService := data_source.NewService(dsRepo, s.logger)
+	ds := datasource_handler.New(dsService, s.logger)
 	r.Route("/datasource", ds.Register)
 }
 

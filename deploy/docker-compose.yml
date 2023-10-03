@@ -30,6 +30,7 @@ services:
       - DATA_SOURCE_PORT=4011
     networks:
       - bi
+    network_mode: host
 #
 #  gateway:
 #    build: ../backend/gateway
