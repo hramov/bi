@@ -18,9 +18,10 @@ const filterDrawer = ref(false);
 const layout = ref([] as any);
 
 const getDataForRow = async (row: any) => {
+
   const result = [];
 
-  const res = await ApiManager.performQuery(row.data_queries[row.raw_options.yAxis[0].yAxisID]);
+  const res = await ApiManager.performQuery(row.data_queries[row.options.yAxis[0].yAxisID]);
   if (Array.isArray(res)) {
     for (const r of res) {
       if (r.length > 2) {
@@ -32,7 +33,7 @@ const getDataForRow = async (row: any) => {
   return result;
 }
 
-onMounted(async () => {
+const loadData = async () => {
   await store.getDashboard(route.params.dashboard_id as string);
   await store.getAvailableTypes();
 
@@ -49,7 +50,7 @@ onMounted(async () => {
         component: shallowRef(ChartBlueprint),
         title: item.title,
         data: await getDataForRow(item),
-        options: item.raw_options,
+        options: item.options,
         styles: item.styles
       })
     }
@@ -57,6 +58,9 @@ onMounted(async () => {
   }
 
   await nextTick(() => onContainerResized());
+}
+onMounted(async () => {
+  await loadData();
 });
 
 const createChartDialog = ref(false);
@@ -65,8 +69,9 @@ const onChartDialogClose = () => {
   createChartDialog.value = false;
 }
 
-const onChartDialogSave = () => {
+const onChartDialogSave = async () => {
   createChartDialog.value = false;
+  await loadData();
 }
 
 const onMenuClick = (el: string) => {

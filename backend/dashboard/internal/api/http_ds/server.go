@@ -6,20 +6,26 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
-	"github.com/hramov/gvc-bi/backend/dashboard/internal"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http_ds/handler_ds"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/connections"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/repository"
 	"net/http"
 )
 
+type Logger interface {
+	Debug(msg string)
+	Info(msg string)
+	Warning(msg string)
+	Error(msg string)
+}
+
 type Server struct {
 	port   int
 	db     *sql.DB
-	logger internal.Logger
+	logger Logger
 }
 
-func New(port int, db *sql.DB, logger internal.Logger) *Server {
+func New(port int, db *sql.DB, logger Logger) *Server {
 	return &Server{port: port, db: db, logger: logger}
 }
 

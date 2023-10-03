@@ -2,19 +2,25 @@ package users
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/hramov/gvc-bi/backend/dashboard/internal"
 	"net/http"
 )
 
+type Logger interface {
+	Debug(msg string)
+	Info(msg string)
+	Warning(msg string)
+	Error(msg string)
+}
+
 type Handler struct {
 	repo   Repository
-	logger internal.Logger
+	logger Logger
 }
 
 type Repository interface {
 }
 
-func New(repo Repository, logger internal.Logger) *Handler {
+func New(repo Repository, logger Logger) *Handler {
 	return &Handler{repo: repo, logger: logger}
 }
 

@@ -33,18 +33,18 @@ onMounted(() => {
 
 const onSave = async () => {
   const mapped = chartMapper(model.value.options);
-  model.value.raw_options = mapped.rawOptions;
+  model.value.options = mapped.rawOptions;
   model.value.data_queries = mapped.dataQueries;
 
   const result = await store.saveChart(model.value);
   console.log(result);
-  // emit('save', model);
-  // clear();
+  emit('save', model);
+  clear();
 }
 
-// const clear = () => {
-//   model = {} as any;
-// }
+const clear = () => {
+  model.value = {} as any;
+}
 
 </script>
 

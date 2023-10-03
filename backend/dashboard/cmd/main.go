@@ -23,36 +23,36 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
 
-	l := logger.New("dashboard", logger.Debug)
+	appLogger := logger.New("dashboard", logger.Debug)
 
 	pg, err := postgres.New(nil, os.Getenv("PG_DSN"))
 
 	if err != nil {
-		l.Error(err.Error())
+		appLogger.Error(err.Error())
 		os.Exit(1)
 	}
 
 	portStr := os.Getenv("DASHBOARD_PORT")
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
-		l.Error(err.Error())
+		appLogger.Error(err.Error())
 		os.Exit(1)
 	}
 
-	s := http.New(port, pg, l)
+	s := http.New(port, pg, appLogger)
 	go s.Start(ctx)
 
 	portStr = os.Getenv("DATA_SOURCE_PORT")
 	port, err = strconv.Atoi(portStr)
 	if err != nil {
-		l.Error(err.Error())
+		appLogger.Error(err.Error())
 		os.Exit(1)
 	}
 
-	dsServer := http_ds.New(port, pg, l)
+	dsServer := http_ds.New(port, pg, appLogger)
 	err = dsServer.Start(ctx)
 	if err != nil {
-		l.Error(err.Error())
+		appLogger.Error(err.Error())
 		os.Exit(0)
 	}
 }

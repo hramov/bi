@@ -6,21 +6,28 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
-	"github.com/hramov/gvc-bi/backend/dashboard/internal"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http/handlers/dashboards"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http/handlers/datasource"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/api/http/handlers/users"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/repository"
 	"net/http"
 )
 
+type Logger interface {
+	Debug(msg string)
+	Info(msg string)
+	Warning(msg string)
+	Error(msg string)
+}
+
 type Server struct {
 	port   int
 	db     *sql.DB
-	logger internal.Logger
+	logger Logger
 }
 
-func New(port int, db *sql.DB, logger internal.Logger) *Server {
+func New(port int, db *sql.DB, logger Logger) *Server {
 	return &Server{port: port, db: db, logger: logger}
 }
 
@@ -29,8 +36,9 @@ func (s *Server) registerHandlers(r chi.Router) {
 	u := users.New(userRepo, s.logger)
 	r.Route("/users", u.Register)
 
-	dashRepo := &repository.DashboardsRepository{Db: s.db}
-	d := dashboards.New(dashRepo, s.logger)
+	dashRepo := dashboard.NewRepository(s.db)
+	dashService := dashboard.NewService(dashRepo, s.logger)
+	d := dashboards.New(dashService, s.logger)
 	r.Route("/dashboards", d.Register)
 
 	dsRepo := &repository.DatasourceRepository{Db: s.db}

@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"github.com/hramov/gvc-bi/backend/dashboard/internal"
 	"runtime"
 	"strconv"
 	"strings"
@@ -18,12 +17,12 @@ const (
 	Error   LogLevel = 3
 )
 
-type logger struct {
+type Logger struct {
 	log   *logrus.Entry
 	level LogLevel
 }
 
-func New(service string, level LogLevel) internal.Logger {
+func New(service string, level LogLevel) *Logger {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
 	pc, file, line, ok := runtime.Caller(1)
@@ -36,21 +35,21 @@ func New(service string, level LogLevel) internal.Logger {
 	fn := funcname[strings.LastIndex(funcname, ".")+1:]
 
 	log := logrus.WithField("file", filename).WithField("function", fn).WithField("service", service)
-	return &logger{log, level}
+	return &Logger{log, level}
 }
 
-func (l *logger) Debug(msg string) {
+func (l *Logger) Debug(msg string) {
 	l.log.Debugln(msg)
 }
 
-func (l *logger) Info(msg string) {
+func (l *Logger) Info(msg string) {
 	l.log.Infoln(msg)
 }
 
-func (l *logger) Warning(msg string) {
+func (l *Logger) Warning(msg string) {
 	l.log.Warningln(msg)
 }
 
-func (l *logger) Error(msg string) {
+func (l *Logger) Error(msg string) {
 	l.log.Errorln(msg)
 }

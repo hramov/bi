@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/hramov/gvc-bi/backend/dashboard/internal"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/connections"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/repository"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/database"
@@ -12,6 +11,13 @@ import (
 	"net/http"
 	"time"
 )
+
+type Logger interface {
+	Debug(msg string)
+	Info(msg string)
+	Warning(msg string)
+	Error(msg string)
+}
 
 type QueryOptions struct {
 	Source string `json:"source"`
@@ -26,10 +32,10 @@ type CheckResult struct {
 
 type Handler struct {
 	repo   repository.DatasourceRepository
-	logger internal.Logger
+	logger Logger
 }
 
-func New(repo repository.DatasourceRepository, logger internal.Logger) *Handler {
+func New(repo repository.DatasourceRepository, logger Logger) *Handler {
 	return &Handler{
 		repo:   repo,
 		logger: logger,
