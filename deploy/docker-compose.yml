@@ -1,19 +1,23 @@
 version: "3"
 services:
 
-#  gateway:
-#    image: nginx
-#    container_name: bi_gateway
-#    depends_on:
-#      - db
-#      - dashboard
-#      - data_storage
-#    expose:
-#      - "8080"
-#    ports:
-#      - "8080:80"
-#    networks:
-#      - bi
+  ui:
+    build: ../ui
+    container_name: bi_ui
+    depends_on:
+      - db
+      - dashboard
+      - data_source
+    expose:
+      - "8080"
+    ports:
+      - "8080:80"
+    environment:
+      - VITE_APP_API_URL=http://dashboard:4010/api
+      - VITE_APP_USER_URL=http://dashboard:4010/api
+      - VITE_APP_DS_URL=http://data_source:4011/api
+    networks:
+      - bi
 
   dashboard:
     build: ../backend/dashboard
