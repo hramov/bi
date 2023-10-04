@@ -5,7 +5,7 @@ import (
 	data_source_dto_in "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/data_source/dto/in"
 )
 
-func (r *RepositoryImpl) Update(ds data_source_dto_in.Datasource, id int) (*int, error) {
+func (r *RepositoryImpl) Update(ctx context.Context, ds data_source_dto_in.Datasource, id int) (*int, error) {
 	query := `
 		UPDATE data_sources
 		SET driver_id = (SELECT id FROM drivers WHERE code = $1), title = $2, dsn = $3, checked = $4
@@ -15,7 +15,7 @@ func (r *RepositoryImpl) Update(ds data_source_dto_in.Datasource, id int) (*int,
 
 	params := []any{ds.Driver, ds.Title, ds.Dsn, ds.Checked, id}
 
-	row := r.db.QueryRowContext(context.Background(), query, params...)
+	row := r.db.QueryRowContext(ctx, query, params...)
 
 	if row.Err() != nil {
 		return nil, row.Err()

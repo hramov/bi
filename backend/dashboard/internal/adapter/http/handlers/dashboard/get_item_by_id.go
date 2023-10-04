@@ -1,14 +1,19 @@
 package dashboard_handler
 
 import (
+	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/utils"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func (h *Handler) getItemById(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+
 	rawId := chi.URLParam(r, "id")
 	if rawId == "" {
 		utils.SendError(http.StatusBadRequest, "need to pass id parameter", w)
@@ -21,7 +26,7 @@ func (h *Handler) getItemById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := h.service.GetItemById(id)
+	data, err := h.service.GetItemById(ctx, id)
 	if err != nil {
 		utils.SendError(http.StatusInternalServerError, err.Error(), w)
 		return

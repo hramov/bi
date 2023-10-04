@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/external_api"
 	dashboard_handler "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/http/handlers/dashboard"
 	datasource_handler "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/http/handlers/datasource"
 	user_handler "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/http/handlers/user"
@@ -35,6 +36,7 @@ func New(port int, db *sql.DB, logger Logger) *Server {
 	return &Server{port: port, db: db, logger: logger}
 }
 
+// TODO separate composition login
 func (s *Server) registerHandlers(r chi.Router) {
 	userRepo := user_repo.NewRepository(s.db)
 	u := user_handler.New(userRepo, s.logger)
@@ -46,7 +48,8 @@ func (s *Server) registerHandlers(r chi.Router) {
 	r.Route("/dashboards", d.Register)
 
 	dsRepo := data_source_repo.NewRepository(s.db)
-	dsService := data_source.NewService(dsRepo, s.logger)
+	externalApi := external_api.New()
+	dsService := data_source.NewService(dsRepo, externalApi, s.logger)
 	ds := datasource_handler.New(dsService, s.logger)
 	r.Route("/datasource", ds.Register)
 }

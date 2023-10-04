@@ -1,6 +1,7 @@
 package dashboard
 
 import (
+	"context"
 	dashboards_dto_in "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/dto/in"
 	dashboard_entity "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/entity"
 )
@@ -13,14 +14,14 @@ type Logger interface {
 }
 
 type Repository interface {
-	Get() ([]*dashboard_entity.Dashboard, error)
-	GetItemById(id int) (*dashboard_entity.Item, error)
-	GetAvailableTypes() ([]*dashboard_entity.ItemType, error)
-	GetByDashId(id string) (*dashboard_entity.Dashboard, error)
-	Create(dto dashboards_dto_in.Dashboard) (*int, error)
-	Update(dto dashboards_dto_in.Dashboard, id int) (*int, error)
-	CreateItem(dto dashboards_dto_in.Item) (*int, error)
-	UpdateItem(dto dashboards_dto_in.Item, id int) (*int, error)
+	Get(ctx context.Context) ([]*dashboard_entity.Dashboard, error)
+	GetItemById(ctx context.Context, id int) (*dashboard_entity.Item, error)
+	GetAvailableTypes(ctx context.Context) ([]*dashboard_entity.ItemType, error)
+	GetByDashId(ctx context.Context, id string) (*dashboard_entity.Dashboard, error)
+	Create(ctx context.Context, dto dashboards_dto_in.Dashboard) (*int, error)
+	Update(ctx context.Context, dto dashboards_dto_in.Dashboard, id int) (*int, error)
+	CreateItem(ctx context.Context, dto dashboards_dto_in.Item) (*int, error)
+	UpdateItem(ctx context.Context, dto dashboards_dto_in.Item, id int) (*int, error)
 }
 
 type Service struct {
@@ -35,38 +36,38 @@ func NewService(repo Repository, logger Logger) *Service {
 	}
 }
 
-func (s *Service) Get() ([]*dashboard_entity.Dashboard, error) {
-	return s.repo.Get()
+func (s *Service) Get(ctx context.Context) ([]*dashboard_entity.Dashboard, error) {
+	return s.repo.Get(ctx)
 }
 
-func (s *Service) GetByDashId(id string) (*dashboard_entity.Dashboard, error) {
-	dash, err := s.repo.GetByDashId(id)
+func (s *Service) GetByDashId(ctx context.Context, id string) (*dashboard_entity.Dashboard, error) {
+	dash, err := s.repo.GetByDashId(ctx, id)
 	if err != nil {
 		s.logger.Error(err.Error())
 	}
 	return dash, err
 }
 
-func (s *Service) Create(dto dashboards_dto_in.Dashboard) (*int, error) {
-	return s.repo.Create(dto)
+func (s *Service) Create(ctx context.Context, dto dashboards_dto_in.Dashboard) (*int, error) {
+	return s.repo.Create(ctx, dto)
 }
 
-func (s *Service) Update(dto dashboards_dto_in.Dashboard, id int) (*int, error) {
-	return s.repo.Update(dto, id)
+func (s *Service) Update(ctx context.Context, dto dashboards_dto_in.Dashboard, id int) (*int, error) {
+	return s.repo.Update(ctx, dto, id)
 }
 
-func (s *Service) GetItemById(id int) (*dashboard_entity.Item, error) {
-	return s.repo.GetItemById(id)
+func (s *Service) GetItemById(ctx context.Context, id int) (*dashboard_entity.Item, error) {
+	return s.repo.GetItemById(ctx, id)
 }
 
-func (s *Service) CreateItem(dto dashboards_dto_in.Item) (*int, error) {
-	return s.repo.CreateItem(dto)
+func (s *Service) CreateItem(ctx context.Context, dto dashboards_dto_in.Item) (*int, error) {
+	return s.repo.CreateItem(ctx, dto)
 }
 
-func (s *Service) UpdateItem(dto dashboards_dto_in.Item, id int) (*int, error) {
-	return s.repo.UpdateItem(dto, id)
+func (s *Service) UpdateItem(ctx context.Context, dto dashboards_dto_in.Item, id int) (*int, error) {
+	return s.repo.UpdateItem(ctx, dto, id)
 }
 
-func (s *Service) GetAvailableTypes() ([]*dashboard_entity.ItemType, error) {
-	return s.repo.GetAvailableTypes()
+func (s *Service) GetAvailableTypes(ctx context.Context) ([]*dashboard_entity.ItemType, error) {
+	return s.repo.GetAvailableTypes(ctx)
 }

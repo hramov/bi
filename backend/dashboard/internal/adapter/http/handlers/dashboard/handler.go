@@ -1,6 +1,7 @@
 package dashboard_handler
 
 import (
+	"context"
 	"github.com/go-chi/chi/v5"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard"
 	dashboards_dto_in "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/dto/in"
@@ -15,14 +16,14 @@ type Logger interface {
 }
 
 type Service interface {
-	Get() ([]*dashboard_entity.Dashboard, error)
-	GetByDashId(id string) (*dashboard_entity.Dashboard, error)
-	Create(dto dashboards_dto_in.Dashboard) (*int, error)
-	Update(dto dashboards_dto_in.Dashboard, id int) (*int, error)
-	GetItemById(id int) (*dashboard_entity.Item, error)
-	CreateItem(dto dashboards_dto_in.Item) (*int, error)
-	UpdateItem(dto dashboards_dto_in.Item, id int) (*int, error)
-	GetAvailableTypes() ([]*dashboard_entity.ItemType, error)
+	Get(ctx context.Context) ([]*dashboard_entity.Dashboard, error)
+	GetByDashId(ctx context.Context, id string) (*dashboard_entity.Dashboard, error)
+	Create(ctx context.Context, dto dashboards_dto_in.Dashboard) (*int, error)
+	Update(ctx context.Context, dto dashboards_dto_in.Dashboard, id int) (*int, error)
+	GetItemById(ctx context.Context, id int) (*dashboard_entity.Item, error)
+	CreateItem(ctx context.Context, dto dashboards_dto_in.Item) (*int, error)
+	UpdateItem(ctx context.Context, dto dashboards_dto_in.Item, id int) (*int, error)
+	GetAvailableTypes(ctx context.Context) ([]*dashboard_entity.ItemType, error)
 }
 
 type Handler struct {

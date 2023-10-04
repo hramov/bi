@@ -6,10 +6,10 @@ import (
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/entity"
 )
 
-func (d *RepositoryImpl) Get() ([]*dashboard_entity.Dashboard, error) {
+func (d *RepositoryImpl) Get(ctx context.Context) ([]*dashboard_entity.Dashboard, error) {
 	query := `select * from dashboards`
 
-	rows, err := d.db.QueryContext(context.Background(), query)
+	rows, err := d.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}

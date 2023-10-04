@@ -6,10 +6,10 @@ import (
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/entity"
 )
 
-func (d *RepositoryImpl) GetAvailableTypes() ([]*dashboard_entity.ItemType, error) {
+func (d *RepositoryImpl) GetAvailableTypes(ctx context.Context) ([]*dashboard_entity.ItemType, error) {
 	query := `select * from dashboard_item_types`
 
-	rows, err := d.db.QueryContext(context.Background(), query)
+	rows, err := d.db.QueryContext(ctx, query)
 
 	if err != nil {
 		return nil, err

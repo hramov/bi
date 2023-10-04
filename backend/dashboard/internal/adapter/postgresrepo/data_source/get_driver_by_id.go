@@ -7,11 +7,11 @@ import (
 	data_source_entity "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/data_source/entity"
 )
 
-func (r *RepositoryImpl) GetDriverById(id int) (*data_source_entity.Driver, error) {
+func (r *RepositoryImpl) GetDriverById(ctx context.Context, id int) (*data_source_entity.Driver, error) {
 	query := `select * from drivers where id = $1`
 	params := []any{id}
 
-	row := r.db.QueryRowContext(context.Background(), query, params...)
+	row := r.db.QueryRowContext(ctx, query, params...)
 
 	if row.Err() != nil {
 		if !errors.Is(row.Err(), sql.ErrNoRows) {

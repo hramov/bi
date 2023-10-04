@@ -9,7 +9,7 @@ import (
 	dashboard_entity "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/entity"
 )
 
-func (d *RepositoryImpl) GetByDashId(id string) (*dashboard_entity.Dashboard, error) {
+func (d *RepositoryImpl) GetByDashId(ctx context.Context, id string) (*dashboard_entity.Dashboard, error) {
 	query := `
 		select d.id, d.dash_id, d.title, d.description,
 		   date_trunc('second', d.created_at) as created_at,
@@ -29,7 +29,7 @@ func (d *RepositoryImpl) GetByDashId(id string) (*dashboard_entity.Dashboard, er
 	`
 	params := []any{id}
 
-	row := d.db.QueryRowContext(context.Background(), query, params...)
+	row := d.db.QueryRowContext(ctx, query, params...)
 
 	if row.Err() != nil {
 		if !errors.Is(row.Err(), sql.ErrNoRows) {

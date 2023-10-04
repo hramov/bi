@@ -58,7 +58,7 @@ func (s *Server) Start(ctx context.Context) error {
 	}()
 
 	dsRepo := data_source_repo.NewRepository(s.db)
-	ds, err := dsRepo.Get()
+	ds, err := dsRepo.Get(ctx)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (s *Server) Start(ctx context.Context) error {
 		})
 	}
 
-	errs := connections.Connect(rc)
+	errs := connections.Connect(ctx, rc)
 
 	errStr := ""
 

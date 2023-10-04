@@ -1,14 +1,19 @@
 package datasource_handler
 
 import (
+	"context"
 	"fmt"
 	data_source_dto_out "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/data_source/dto/out"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/utils"
 	"net/http"
+	"time"
 )
 
 func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
-	sources, err := h.service.Get()
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+
+	sources, err := h.service.Get(ctx)
 	if err != nil {
 		utils.SendError(http.StatusInternalServerError, fmt.Sprintf("cannot fetch data from database: %v", err.Error()), w)
 		return

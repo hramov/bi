@@ -8,6 +8,8 @@ import {useDatasourceStore} from "../../../modules/store/datasource.store.ts";
 const props = defineProps(['dialog', 'data']);
 const emit = defineEmits(['close', 'save']);
 
+const store = useDatasourceStore();
+
 const onClose = () => {
   status.value = {
     color: 'yellow',
@@ -18,7 +20,17 @@ const onClose = () => {
 }
 
 const reset = () => {
-  model.value = {};
+  model.value = {
+    driver: null,
+    title: '',
+    host: '',
+    port: '5432',
+    user: '',
+    password: '',
+    database: '',
+    sslmode: 'disable',
+    checked: false,
+  };
 }
 
 const loading = ref(false);
@@ -39,7 +51,7 @@ const model = ref({
   checked: false,
 });
 
-watch(() => props.data.id, () => {
+watch(() => props.dialog, () => {
   model.value = { ...props.data, ...credentials(props.data.dsn)};
 })
 
@@ -62,8 +74,6 @@ const checkConnection = async () => {
     status.value.text = 'Ошибка: ' + result.message;
   }
 }
-
-const store = useDatasourceStore();
 
 const dsn = computed(() => {
   return `postgresql://${model.value.user}:${model.value.password}@${model.value.host}:${model.value.port}/${model.value.database}?sslmode=${model.value.sslmode}`

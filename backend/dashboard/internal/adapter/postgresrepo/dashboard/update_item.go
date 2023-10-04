@@ -5,7 +5,7 @@ import (
 	dashboards_dto_in "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/dto/in"
 )
 
-func (d *RepositoryImpl) UpdateItem(dto dashboards_dto_in.Item, id int) (*int, error) {
+func (d *RepositoryImpl) UpdateItem(ctx context.Context, dto dashboards_dto_in.Item, id int) (*int, error) {
 	query := `
 		update dashboard_items set
 		dash_id = $1, item_type = $2, title = $3, description = $4, raw_options = $5, updated_at = now()
@@ -15,7 +15,7 @@ func (d *RepositoryImpl) UpdateItem(dto dashboards_dto_in.Item, id int) (*int, e
 
 	params := []any{dto.DashId, dto.ItemType, dto.Title, dto.Description, dto.Options, id}
 
-	row := d.db.QueryRowContext(context.Background(), query, params...)
+	row := d.db.QueryRowContext(ctx, query, params...)
 
 	var updatedId int
 

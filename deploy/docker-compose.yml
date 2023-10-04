@@ -13,6 +13,7 @@ services:
     environment:
       - PG_DSN=postgres://postgres:postgres@db:5433/bi?sslmode=disable
       - DASHBOARD_PORT=4010
+      - DATA_SOURCE_RECALL_URL=http://localhost:4011/api/ds/recall
     networks:
       - bi
 
@@ -30,22 +31,24 @@ services:
       - DATA_SOURCE_PORT=4011
     networks:
       - bi
-    network_mode: host
-#
+    extra_hosts:
+      - "localhost:192.168.1.55"
+
 #  gateway:
-#    build: ../backend/gateway
+#    image: nginx
 #    container_name: bi_gateway
 #    depends_on:
 #      - db
+#      - dashboard
+#      - data_storage
 #    expose:
-#      - "3012"
+#      - "8080"
 #    ports:
-#      - "3012:3012"
-#    environment:
-#      - PG_DSN=postgres://postgres:postgres@db:5432/bi?sslmode=disable
-#      - SERVER_PORT=3012
+#      - "8080:80"
 #    networks:
 #      - bi
+
+
 
   db:
     image: postgres
@@ -69,3 +72,4 @@ volumes:
 networks:
   bi:
     driver: bridge
+    external: true

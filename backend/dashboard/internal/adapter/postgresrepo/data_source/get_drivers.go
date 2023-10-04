@@ -5,10 +5,10 @@ import (
 	data_source_entity "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/data_source/entity"
 )
 
-func (r *RepositoryImpl) GetDrivers() ([]*data_source_entity.Driver, error) {
+func (r *RepositoryImpl) GetDrivers(ctx context.Context) ([]*data_source_entity.Driver, error) {
 	query := `select * from drivers`
 
-	rows, err := r.db.QueryContext(context.Background(), query)
+	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ import (
 	dashboards_dto_in "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/dto/in"
 )
 
-func (d *RepositoryImpl) CreateItem(dto dashboards_dto_in.Item) (*int, error) {
+func (d *RepositoryImpl) CreateItem(ctx context.Context, dto dashboards_dto_in.Item) (*int, error) {
 	query := `
 		insert into dashboard_items (dash_id, item_type, title, description, raw_options, data_queries)
 		values ($1, $2, $3, $4, $5, $6)
@@ -25,7 +25,7 @@ func (d *RepositoryImpl) CreateItem(dto dashboards_dto_in.Item) (*int, error) {
 
 	params := []any{dto.DashId, dto.ItemType, dto.Title, dto.Description, options, dq}
 
-	row := d.db.QueryRowContext(context.Background(), query, params...)
+	row := d.db.QueryRowContext(ctx, query, params...)
 
 	var id int
 	if err := row.Scan(&id); err != nil {

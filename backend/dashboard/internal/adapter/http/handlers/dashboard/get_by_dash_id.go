@@ -1,20 +1,25 @@
 package dashboard_handler
 
 import (
+	"context"
 	"github.com/go-chi/chi/v5"
 	dashboards_dto_out "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard/dto/out"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/utils"
 	"net/http"
+	"time"
 )
 
 func (h *Handler) getByDashId(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+
 	id := chi.URLParam(r, "id")
 	if id == "" {
 		utils.SendError(http.StatusInternalServerError, "no id found", w)
 		return
 	}
 
-	data, err := h.service.GetByDashId(id)
+	data, err := h.service.GetByDashId(ctx, id)
 	if err != nil {
 		utils.SendError(http.StatusInternalServerError, err.Error(), w)
 		return
