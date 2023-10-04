@@ -1,4 +1,4 @@
-module github.com/hramov/gvc-bi/backend/dashboard
+module github.com/hramov/gvc-bi/backend/datasource
 
 go 1.21.0
 

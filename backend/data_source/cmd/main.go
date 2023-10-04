@@ -2,11 +2,10 @@ package main
 
 import (
 	"context"
-	_ "github.com/hramov/gvc-bi/backend/dashboard/api"
-	"github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/http"
-	"github.com/hramov/gvc-bi/backend/dashboard/pkg/database/postgres"
-	"github.com/hramov/gvc-bi/backend/dashboard/pkg/logger"
-	"github.com/hramov/gvc-bi/backend/dashboard/pkg/metrics"
+	"github.com/hramov/gvc-bi/backend/datasource/internal/adapter/http"
+	"github.com/hramov/gvc-bi/backend/datasource/pkg/database/postgres"
+	"github.com/hramov/gvc-bi/backend/datasource/pkg/logger"
+	"github.com/hramov/gvc-bi/backend/datasource/pkg/metrics"
 	"github.com/joho/godotenv"
 	"gopkg.in/Graylog2/go-gelf.v1/gelf"
 	"io"
@@ -49,13 +48,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	portStr := os.Getenv("DASHBOARD_PORT")
+	portStr := os.Getenv("DATA_SOURCE_PORT")
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
 		appLogger.Error(err.Error())
 		os.Exit(1)
 	}
 
-	s := http.New(port, pg, appLogger)
-	s.Start(ctx)
+	dsServer := http.New(port, pg, appLogger)
+	err = dsServer.Start(ctx)
+	if err != nil {
+		appLogger.Error(err.Error())
+		os.Exit(0)
+	}
 }
