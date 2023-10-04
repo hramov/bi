@@ -10,12 +10,14 @@ import (
 	dashboard_handler "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/http/handlers/dashboard"
 	datasource_handler "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/http/handlers/datasource"
 	user_handler "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/http/handlers/user"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/http/middlewares"
 	dashboard_repo "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/postgresrepo/dashboard"
 	data_source_repo "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/postgresrepo/data_source"
 	user_repo "github.com/hramov/gvc-bi/backend/dashboard/internal/adapter/postgresrepo/user"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/domain/dashboard"
 	"github.com/hramov/gvc-bi/backend/dashboard/internal/domain/data_source"
-
+	"github.com/hramov/gvc-bi/backend/dashboard/pkg/metrics"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 )
 
@@ -65,6 +67,13 @@ func (s *Server) Start(ctx context.Context) {
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))
+
+	r.Use(middlewares.ReqId)
+
+	metrics.HandleMetrics(r)
+
+	r.Handle("/swagger", http.RedirectHandler("/swagger/index.html", http.StatusMovedPermanently))
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	r.Route("/api", s.registerHandlers)
 

@@ -1,6 +1,20 @@
 version: "3"
 services:
 
+#  gateway:
+#    image: nginx
+#    container_name: bi_gateway
+#    depends_on:
+#      - db
+#      - dashboard
+#      - data_storage
+#    expose:
+#      - "8080"
+#    ports:
+#      - "8080:80"
+#    networks:
+#      - bi
+
   dashboard:
     build: ../backend/dashboard
     container_name: bi_dashboard
@@ -17,9 +31,9 @@ services:
     networks:
       - bi
 
-  data_storage:
-    build: ../backend/data_storage
-    container_name: bi_data_storage
+  data_source:
+    build: ../backend/data_source
+    container_name: bi_data_source
     depends_on:
       - db
     expose:
@@ -33,22 +47,6 @@ services:
       - bi
     extra_hosts:
       - "localhost:192.168.1.55"
-
-#  gateway:
-#    image: nginx
-#    container_name: bi_gateway
-#    depends_on:
-#      - db
-#      - dashboard
-#      - data_storage
-#    expose:
-#      - "8080"
-#    ports:
-#      - "8080:80"
-#    networks:
-#      - bi
-
-
 
   db:
     image: postgres
@@ -65,6 +63,10 @@ services:
     command: -p 5433
     networks:
       - bi
+
+  # prometheus
+
+  # grafana
 
 volumes:
   bi-db-data:
