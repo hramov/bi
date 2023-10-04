@@ -8,59 +8,61 @@ services:
       - db
     expose:
       - "4010"
-      - "4011"
     ports:
       - "4010:4010"
-      - "4011:4011"
     environment:
-      - PG_DSN=postgres://postgres:postgres@db:5432/bi?sslmode=disable
+      - PG_DSN=postgres://postgres:postgres@db:5433/bi?sslmode=disable
       - DASHBOARD_PORT=4010
-      - DATA_SOURCE_PORT=4011
+      - DATA_SOURCE_RECALL_URL=http://localhost:4011/api/ds/recall
     networks:
       - bi
 
-#  data_storage:
-#    build: ../backend/data_storage
-#    container_name: bi_data_storage
-#    depends_on:
-#      - db
-#    expose:
-#      - "3011"
-#    ports:
-#      - "3011:3011"
-#    environment:
-#      - SERVER_PORT=3011
-#    networks:
-#      - bi
-#
+  data_storage:
+    build: ../backend/data_storage
+    container_name: bi_data_storage
+    depends_on:
+      - db
+    expose:
+      - "4011"
+    ports:
+      - "4011:4011"
+    environment:
+      - PG_DSN=postgres://postgres:postgres@db:5433/bi?sslmode=disable
+      - DATA_SOURCE_PORT=4011
+    networks:
+      - bi
+    extra_hosts:
+      - "localhost:192.168.1.55"
+
 #  gateway:
-#    build: ../backend/gateway
+#    image: nginx
 #    container_name: bi_gateway
 #    depends_on:
 #      - db
+#      - dashboard
+#      - data_storage
 #    expose:
-#      - "3012"
+#      - "8080"
 #    ports:
-#      - "3012:3012"
-#    environment:
-#      - PG_DSN=postgres://postgres:postgres@db:5432/bi?sslmode=disable
-#      - SERVER_PORT=3012
+#      - "8080:80"
 #    networks:
 #      - bi
+
+
 
   db:
     image: postgres
     container_name: bi_db
     expose:
-      - "5432"
+      - "5433"
     ports:
-      - "5432:5432"
+      - "5433:5433"
     environment:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - bi-db-data:/var/lib/postgresql/data
       - ./sql/:/docker-entrypoint-initdb.d/
-    command: -p 5432
+    command: -p 5433
     networks:
       - bi
 
@@ -70,3 +72,4 @@ volumes:
 networks:
   bi:
     driver: bridge
+    external: true

@@ -57,7 +57,7 @@ const deleteDataSource = () => {
               <div class="text-overline mb-1">
               </div>
               <div class="text-h6 mb-1">
-                Postgres
+                {{ s.title }}
               </div>
               <div class="text-caption">DSN: {{ s.dsn }}</div>
             </div>

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func GetBody[T any](r *http.Request) (T, error) {
@@ -144,4 +146,10 @@ func Jsonify(rows *sql.Rows) []string {
 	}
 
 	return data
+}
+
+func GetReqContextWithTimeout(r *http.Request, sec int) (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(sec)*time.Second)
+	r = r.WithContext(ctx)
+	return r.Context(), cancel
 }
