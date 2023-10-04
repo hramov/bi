@@ -9,3 +9,5 @@
 The script then pulls latest changes from ```dev``` branch and restarts containers. 
 
 Script also creates external docker network ```bi``` to have access to host network.
+
+Then open http://localhost:8080
