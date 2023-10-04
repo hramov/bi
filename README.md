@@ -1,8 +1,11 @@
 # My test bi system
 
-### Folder structure
-1) ui - client side (Vite/Vue3 + Vuetify)
-2) backend
-   1. dashboard - backend for bi system
-   2. data_storage - service for fetching data from data sources (database, api)
-   3. gateway - API gateway
+## How to start the system
+1) Open a terminal (preferably GitBash or another UNIX-like terminal)
+2) Navigate to deploy folder ```cd ./deploy```
+3) Set executable flag to deploy.sh ```chmod +x ./deploy.sh```
+4) Start the script ```./deploy.sh```
+
+The script then pulls latest changes from ```dev``` branch and restarts containers. 
+
+Script also creates external docker network ```bi``` to have access to host network.
