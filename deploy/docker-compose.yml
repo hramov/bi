@@ -50,7 +50,7 @@ services:
     networks:
       - bi
     extra_hosts:
-      - "localhost:192.168.1.55"
+      - "host.docker.internal:host-gateway"
 
   db:
     image: postgres
@@ -78,4 +78,3 @@ volumes:
 networks:
   bi:
     driver: bridge
-    external: true

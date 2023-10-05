@@ -19,7 +19,7 @@ const vuetify = createVuetify({
     },
     directives,
     theme: {
-        defaultTheme: 'dark'
+        defaultTheme: 'dark',
     }
 });
 

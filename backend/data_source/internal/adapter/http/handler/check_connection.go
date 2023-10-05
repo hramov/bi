@@ -19,7 +19,7 @@ func (h *Handler) checkConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	storage, err := database.NewStorage(database.DataStorageOptions{
+	storage, err := database.NewStorageForQuery(database.DataStorageOptions{
 		Driver:   dataSource.Driver,
 		Host:     dataSource.Host,
 		Port:     dataSource.Port,

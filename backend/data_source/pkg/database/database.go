@@ -42,10 +42,21 @@ func NewStorage(storage DataStorageOptions) (*sql.DB, error) {
 	return nil, fmt.Errorf("cannot find driver")
 }
 
-func NewStorageForQuery(driver, dsn string) (*sql.DB, error) {
-	switch driver {
+func NewStorageForQuery(storage DataStorageOptions) (*sql.DB, error) {
+	switch storage.Driver {
 	case string(Postgres):
-		return postgres.New(nil, dsn)
+		port, _ := strconv.Atoi(storage.Port)
+
+		pgOptions := &postgres.Options{
+			Host:     storage.Host,
+			Port:     port,
+			User:     storage.User,
+			Password: storage.Password,
+			Database: storage.Database,
+			SslMode:  storage.Sslmode,
+		}
+
+		return postgres.NewQuery(pgOptions, "")
 	}
 	return nil, fmt.Errorf("cannot find driver")
 }

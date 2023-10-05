@@ -41,6 +41,12 @@ func New(service string, level LogLevel, output io.Writer) *Logger {
 	return &Logger{log, level}
 }
 
+func NewTest() *Logger {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	log := logrus.WithField("purpose", "test")
+	return &Logger{log, Debug}
+}
+
 func (l *Logger) Debug(msg string) {
 	l.log.Debugln(msg)
 }
