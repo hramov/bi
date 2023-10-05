@@ -3,12 +3,14 @@
 import CreateModal from "../../layout/components/CreateModal.vue";
 import {computed, ref, watch} from "vue";
 import ApiManager from "../../../modules/api";
-import {useDatasourceStore} from "../../../modules/store/datasource.store.ts";
+import {useDatasourceStore} from "../../../modules/store/datasource.store";
+import { useNotificationsStore, NotificationService } from "../../../modules/store/notifications.store";
 
 const props = defineProps(['dialog', 'data']);
 const emit = defineEmits(['close', 'save']);
 
 const store = useDatasourceStore();
+const notificationService: NotificationService = useNotificationsStore();
 
 const onClose = () => {
   status.value = {
@@ -52,7 +54,7 @@ const model = ref({
 });
 
 watch(() => props.dialog, () => {
-  model.value = { ...props.data, ...credentials(props.data.dsn)};
+  model.value = { ...props.data, ...credentials(props.data.dsn), sslmode: 'disable'};
 })
 
 const canCheckConnection = computed(() => {
@@ -68,15 +70,23 @@ const checkConnection = async () => {
     model.value.checked = true;
     status.value.color = 'green';
     status.value.text = 'Успешно';
+    notificationService.showNotification.success({
+      text: "Проверка подключения прошла успешно",
+      duration: 2000,
+    })
   } else {
     model.value.checked = false;
     status.value.color = 'red';
-    status.value.text = 'Ошибка: ' + result.message;
+    status.value.text = 'Ошибка';
+    notificationService.showNotification.error({
+      text: result.error,
+      duration: 10000
+    })
   }
 }
 
 const dsn = computed(() => {
-  return `postgresql://${model.value.user}:${model.value.password}@${model.value.host}:${model.value.port}/${model.value.database}?sslmode=${model.value.sslmode}`
+  return `postgresql://${model.value.user || '[user]'}:${model.value.password || '[password]'}@${model.value.host || '[host]'}:${model.value.port || '[port]'}/${model.value.database || '[database]'}?sslmode=${model.value.sslmode || '[sslmode]'}`
 });
 
 const credentials = (dsn: string) => {
@@ -97,8 +107,20 @@ const credentials = (dsn: string) => {
 
 const onSave = async () => {
   model.value.dsn = dsn;
-  await store.saveSource(model.value);
-  emit('save');
+  try {
+    await store.saveSource(model.value);
+    notificationService.showNotification.success({
+      text: "Источник данных был успешно сохранен",
+      duration: 2000,
+    })
+    emit('save');
+  } catch (e) {
+    notificationService.showNotification.error({
+      text: e.message,
+      duration: 10000,
+    })
+  }
+  
 }
 </script>
 
