@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal/errors"
 	"io"
 	"log"
 	"net/http"
@@ -55,7 +56,7 @@ func GetTokenFromRequest(req *http.Request) (string, error) {
 func SendResponse[T any](code int, data T, w http.ResponseWriter) {
 	bytes, err := json.Marshal(data)
 	if err != nil {
-		SendError(http.StatusInternalServerError, err.Error(), w)
+		SendError(http.StatusInternalServerError, app_errors.AppError(err.Error()), w)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -63,7 +64,7 @@ func SendResponse[T any](code int, data T, w http.ResponseWriter) {
 	_, _ = w.Write(bytes)
 }
 
-func SendError(code int, err string, w http.ResponseWriter) {
+func SendError(code int, err app_errors.AppError, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	_, _ = w.Write([]byte("{\"error\": \"" + err + "\"}"))

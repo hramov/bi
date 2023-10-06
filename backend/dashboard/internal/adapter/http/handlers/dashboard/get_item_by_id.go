@@ -2,8 +2,8 @@ package dashboard_handler
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal/errors"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/utils"
 	"net/http"
 	"strconv"
@@ -22,13 +22,13 @@ func (h *Handler) getItemById(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(rawId)
 	if err != nil {
-		utils.SendError(http.StatusBadRequest, fmt.Sprintf("wrong id format: %v", err.Error()), w)
+		utils.SendError(http.StatusBadRequest, app_errors.ErrWrongIdFormat, w)
 		return
 	}
 
 	data, err := h.service.GetItemById(ctx, id)
 	if err != nil {
-		utils.SendError(http.StatusInternalServerError, err.Error(), w)
+		utils.SendError(http.StatusInternalServerError, app_errors.ErrInternal, w)
 		return
 	}
 
