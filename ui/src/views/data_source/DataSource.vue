@@ -14,7 +14,7 @@ const dataSourceData = ref({} as any);
 
 const editDataSource = async (id: number) => {
   await store.getSourceById(id)
-  dataSourceData.value = store.source;
+  dataSourceData.value = store.source;asf
   dialog.value = true;
 }
 
