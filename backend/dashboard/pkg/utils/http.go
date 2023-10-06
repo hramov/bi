@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal/errors"
 	"io"
 	"log"
 	"net/http"
@@ -13,6 +14,14 @@ import (
 	"strings"
 	"time"
 )
+
+type Response[T any] struct {
+	Code      int     `json:"code"`
+	Message   string  `json:"message"`
+	Data      T       `json:"data"`
+	Timestamp string  `json:"timestamp"`
+	Elapsed   float64 `json:"elapsed"`
+}
 
 func GetBody[T any](r *http.Request) (T, error) {
 	var data T
@@ -63,10 +72,57 @@ func SendResponse[T any](code int, data T, w http.ResponseWriter) {
 	_, _ = w.Write(bytes)
 }
 
+func SendResponseWithMessage[T any](ctx context.Context, code int, message *string, data T, w http.ResponseWriter) {
+	now := time.Now()
+	start := ctx.Value("start").(time.Time)
+
+	if message == nil {
+		message = new(string)
+	}
+
+	bytes, err := json.Marshal(&Response[T]{
+		Code:      code,
+		Message:   *message,
+		Data:      data,
+		Timestamp: now.Format("2006-01-02 15:04:05"),
+		Elapsed:   now.Sub(start).Seconds(),
+	})
+
+	if err != nil {
+		SendCustomError(ctx, http.StatusInternalServerError, app_errors.New(err, "internal server error", nil), w)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	_, _ = w.Write(bytes)
+}
+
 func SendError(code int, err string, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	_, _ = w.Write([]byte("{\"error\": \"" + err + "\"}"))
+}
+
+func SendCustomError(ctx context.Context, code int, err app_errors.AppError, w http.ResponseWriter) {
+	now := time.Now()
+	start := ctx.Value("start").(time.Time)
+
+	bytes, marshalErr := json.Marshal(&Response[app_errors.AppError]{
+		Code:      code,
+		Message:   err.UIMessage,
+		Data:      err,
+		Timestamp: now.Format("2006-01-02 15:04:05"),
+		Elapsed:   now.Sub(start).Seconds(),
+	})
+
+	if marshalErr != nil {
+		SendCustomError(ctx, http.StatusInternalServerError, app_errors.New(marshalErr, "internal server error", nil), w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	_, _ = w.Write(bytes)
 }
 
 func SendHtml(code int, data []byte, w http.ResponseWriter) {

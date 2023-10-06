@@ -2,8 +2,8 @@ package datasource_handler
 
 import (
 	"context"
-	"fmt"
 	data_source_dto_out "github.com/hramov/gvc-bi/backend/dashboard/internal/domain/data_source/dto/out"
+	"github.com/hramov/gvc-bi/backend/dashboard/internal/errors"
 	"github.com/hramov/gvc-bi/backend/dashboard/pkg/utils"
 	"net/http"
 	"time"
@@ -17,7 +17,7 @@ func (h *Handler) getDrivers(w http.ResponseWriter, r *http.Request) {
 
 	drivers, err := h.service.GetDrivers(ctx)
 	if err != nil {
-		utils.SendError(http.StatusInternalServerError, fmt.Sprintf("cannot fetch data from database: %v", err.Error()), w)
+		utils.SendError(http.StatusInternalServerError, app_errors.ErrInternal, w)
 		return
 	}
 

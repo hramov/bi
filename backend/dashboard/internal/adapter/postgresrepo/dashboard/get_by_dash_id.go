@@ -33,7 +33,7 @@ func (d *RepositoryImpl) GetByDashId(ctx context.Context, id string) (*dashboard
 
 	if row.Err() != nil {
 		if !errors.Is(row.Err(), sql.ErrNoRows) {
-			return nil, nil
+			return nil, sql.ErrNoRows
 		}
 		return nil, row.Err()
 	}
