@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {useNotificationsStore, NotificationService, ENotificationsType} from "../../../modules/store/notifications.store";
+import {useNotificationsStore, ENotificationsType} from "../../../modules/store/notifications.store";
 
-const notificationService: NotificationService = new useNotificationsStore();
+const notificationService = useNotificationsStore();
 
 function hideNotification(id: number) {
     notificationService.hideNotification(id);

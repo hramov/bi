@@ -3,7 +3,7 @@ import Layout from "./views/layout/Layout.vue";
 import {useDatasourceStore} from "./modules/store/datasource.store";
 import {onMounted} from "vue";
 import {useDashboardStore} from "./modules/store/dashboard.store";
-import {useNotificationsStore, NotificationService, EButtonsType} from "./modules/store/notifications.store";
+import {useNotificationsStore, NotificationService} from "./modules/store/notifications.store";
 
 import notifications from "./views/components/notifications/NotificationsComponent.vue";
 
@@ -15,14 +15,6 @@ function showNotification() {
   notificationService.showNotification.error({
     text: 'произошел троллинг',
     duration: 200000,
-    actions: [
-      {
-        callback:() => {
-            console.log(123123)
-        },
-        type: EButtonsType.retry,
-      }
-    ]
   });
 }
 

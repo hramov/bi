@@ -26,12 +26,13 @@ type Notification = {
     text: string;
     id: number;
     duration?: number;
+    actions?: NotificationActions;
 }
 
 type NotificationProps = {
     text: string;
     duration?: number; 
-    actions: NotificationActions;
+    actions?: NotificationActions;
 }
 
 export interface NotificationService {
