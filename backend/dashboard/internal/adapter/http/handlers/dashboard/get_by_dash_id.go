@@ -25,7 +25,7 @@ func (h *Handler) getByDashId(w http.ResponseWriter, r *http.Request) {
 	data, err := h.service.GetByDashId(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			utils.SendError(http.StatusNotFound, app_errors.ErrNotFound, w)
+			utils.SendCustomError(ctx, http.StatusNotFound, app_errors.New(err, app_errors.ErrNotFound, nil), w)
 			return
 		}
 		utils.SendError(http.StatusInternalServerError, app_errors.ErrInternal, w)

@@ -33,5 +33,5 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	utils.SendResponse(http.StatusOK, response, w)
+	utils.SendResponseWithMessage(ctx, http.StatusOK, nil, response, w)
 }

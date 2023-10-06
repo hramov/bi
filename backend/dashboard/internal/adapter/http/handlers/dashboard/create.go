@@ -15,7 +15,7 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 
 	dash, err := utils.GetBody[dashboards_dto_in.Dashboard](r)
 	if err != nil {
-		utils.SendError(http.StatusBadRequest, app_errors.ErrBadRequest, w)
+		utils.SendError(http.StatusBadRequest, "bad request", w)
 		return
 	}
 

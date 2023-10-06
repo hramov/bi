@@ -21,7 +21,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
 
     const getDashboards = async () => {
-        dashboards.value = await ApiManager.get('/dashboards');
+        dashboards.value = (await ApiManager.get('/dashboards')).data;
     }
 
     const saveChart = async (options: any) => {
