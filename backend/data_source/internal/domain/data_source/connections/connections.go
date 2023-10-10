@@ -7,6 +7,37 @@ import (
 	"sync"
 )
 
+type ConnectOptions struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Database string
+}
+
+type ConnectResponse struct {
+	Ok bool
+	Id string
+}
+
+type CheckResponse struct {
+	Ok bool
+}
+
+type QueryOptions struct {
+	Sql string
+}
+
+type QueryResponse struct {
+	Result string
+}
+
+type DataSource interface {
+	Connect(options ConnectOptions) ConnectResponse
+	Check() CheckResponse
+	Query(options QueryOptions) QueryResponse
+}
+
 type RawConnection struct {
 	SourceId int
 	DriverId int

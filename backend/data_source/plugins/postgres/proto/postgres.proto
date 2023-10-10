@@ -1,0 +1,33 @@
+syntax = "proto3";
+package test;
+
+option go_package = "github.com/hramov/postgres-go-plugin";
+
+message ConnectRequest {
+  string dsn = 1;
+}
+
+message ConnectResponse {
+  bool ok = 1;
+  string id = 2;
+}
+
+message CheckRequest {}
+
+message CheckResponse {
+  bool ok = 1;
+}
+
+message QueryRequest {
+  string sql = 1;
+}
+
+message QueryResponse {
+  string result = 1;
+}
+
+service Postgres {
+  rpc Connect(ConnectRequest) returns (ConnectResponse);
+//  rpc Check(CheckRequest) returns (CheckResponse);
+//  rpc Query(QueryRequest) returns (QueryResponse);
+}

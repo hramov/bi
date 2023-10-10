@@ -128,15 +128,7 @@ const prepareChart = async () => {
     </v-expansion-panels>
 
     <div style="width: 50%; height: 500px;">
-      <ChartBlueprint
-          v-if="model.raw_options && showType === 'chart'"
-          :title="model.title"
-          :data="model.data"
-          :options="model.raw_options"
-          :styles="{}"
-      />
-
-      <ShowDataTable v-else-if="showType === 'table' && currentRow >= 0 && model.options.y[currentRow]" :y="model.options.y[currentRow]" />
+      <ShowDataTable v-if="showType === 'table' && currentRow >= 0 && model.options.y[currentRow]" :y="model.options.y[currentRow]" />
     </div>
   </div>
 </template>
