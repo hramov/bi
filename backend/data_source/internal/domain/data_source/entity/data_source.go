@@ -7,6 +7,7 @@ type Datasource struct {
 	Driver      string
 	DriverId    int
 	Title       string
+	PluginName  string
 	Dsn         string
 	Checked     bool
 	DateCreated time.Time

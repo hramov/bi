@@ -22,9 +22,10 @@ func (h *Handler) recallDataSources(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range ds {
 		rc = append(rc, connections.RawConnection{
-			SourceId: v.Id,
-			DriverId: v.DriverId,
-			Dsn:      v.Dsn,
+			SourceId:   v.Id,
+			DriverId:   v.DriverId,
+			PluginName: v.PluginName,
+			Dsn:        v.Dsn,
 		})
 	}
 

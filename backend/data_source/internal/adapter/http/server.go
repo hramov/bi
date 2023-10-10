@@ -79,9 +79,10 @@ func (s *Server) Start(ctx context.Context) error {
 
 	for _, v := range ds {
 		rc = append(rc, connections.RawConnection{
-			SourceId: v.Id,
-			DriverId: v.DriverId,
-			Dsn:      v.Dsn,
+			SourceId:   v.Id,
+			DriverId:   v.DriverId,
+			PluginName: v.PluginName,
+			Dsn:        v.Dsn,
 		})
 	}
 

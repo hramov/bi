@@ -7,7 +7,7 @@ import (
 
 func (r *RepositoryImpl) Get(ctx context.Context) ([]*data_source_entity.Datasource, error) {
 	query := `
-		select ds.id, ds.driver_id, ds.title, ds.dsn, ds.checked, ds.date_created, d.code  
+		select ds.id, ds.driver_id, ds.title, ds.plugin_name, ds.dsn, ds.checked, ds.date_created, d.code  
 		from data_sources ds
 		join drivers d on d.id = ds.driver_id
 	`
@@ -21,7 +21,7 @@ func (r *RepositoryImpl) Get(ctx context.Context) ([]*data_source_entity.Datasou
 
 	for rows.Next() {
 		model := &data_source_entity.Datasource{}
-		err = rows.Scan(&model.Id, &model.DriverId, &model.Title, &model.Dsn, &model.Checked, &model.DateCreated, &model.Driver)
+		err = rows.Scan(&model.Id, &model.DriverId, &model.Title, &model.PluginName, &model.Dsn, &model.Checked, &model.DateCreated, &model.Driver)
 		if err != nil {
 			return nil, err
 		}
