@@ -4,10 +4,10 @@ import "time"
 
 type Datasource struct {
 	Id          int
+	DriverCode  string
 	Driver      string
 	DriverId    int
 	Title       string
-	PluginName  string
 	Dsn         string
 	Checked     bool
 	DateCreated time.Time

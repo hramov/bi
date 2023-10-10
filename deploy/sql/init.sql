@@ -100,8 +100,7 @@ alter table drivers
     owner to postgres;
 
 insert into drivers (title, code) values
-('Postgres', 'pg'),
-('SQL Server', 'sqlserver');
+('Postgres', 'pg');
 
 create table data_sources (
   id serial unique,

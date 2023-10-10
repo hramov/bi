@@ -24,7 +24,7 @@ func (h *Handler) recallDataSources(w http.ResponseWriter, r *http.Request) {
 		rc = append(rc, connections.RawConnection{
 			SourceId:   v.Id,
 			DriverId:   v.DriverId,
-			PluginName: v.PluginName,
+			DriverCode: v.DriverCode,
 			Dsn:        v.Dsn,
 		})
 	}

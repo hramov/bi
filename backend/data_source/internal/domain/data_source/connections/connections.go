@@ -16,7 +16,7 @@ type DataSourcePlugin interface {
 type RawConnection struct {
 	SourceId   int
 	DriverId   int
-	PluginName string
+	DriverCode string
 	Dsn        string
 }
 
@@ -37,7 +37,7 @@ func Connect(ctx context.Context, rc []RawConnection) []error {
 
 	for _, v := range rc {
 		mu.Lock()
-		pool[v.SourceId], err = connect(ctx, v.PluginName, v.Dsn)
+		pool[v.SourceId], err = connect(ctx, v.DriverCode, v.Dsn)
 		mu.Unlock()
 		if err != nil {
 			errs = append(errs, err)

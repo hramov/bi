@@ -81,7 +81,7 @@ func (s *Server) Start(ctx context.Context) error {
 		rc = append(rc, connections.RawConnection{
 			SourceId:   v.Id,
 			DriverId:   v.DriverId,
-			PluginName: v.PluginName,
+			DriverCode: v.DriverCode,
 			Dsn:        v.Dsn,
 		})
 	}

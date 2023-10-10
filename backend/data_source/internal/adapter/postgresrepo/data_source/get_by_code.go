@@ -9,7 +9,7 @@ import (
 
 func (r *RepositoryImpl) GetByCode(ctx context.Context, code string) (*data_source_entity.Datasource, error) {
 	query := `
-		select ds.id, ds.driver_id, ds.title, ds.dsn, ds.checked, ds.date_created, d.code  
+		select ds.id, ds.driver_id, d.code, ds.title, ds.dsn, ds.checked, ds.date_created, d.code  
 		from data_sources ds
 		join drivers d on d.id = ds.driver_id
 		where d.code = $1
@@ -26,7 +26,7 @@ func (r *RepositoryImpl) GetByCode(ctx context.Context, code string) (*data_sour
 	}
 
 	model := &data_source_entity.Datasource{}
-	err := row.Scan(&model.Id, &model.DriverId, &model.Title, &model.Dsn, &model.Checked, &model.DateCreated, &model.Driver)
+	err := row.Scan(&model.Id, &model.DriverId, &model.DriverCode, &model.Title, &model.Dsn, &model.Checked, &model.DateCreated, &model.Driver)
 	if err != nil {
 		return nil, err
 	}

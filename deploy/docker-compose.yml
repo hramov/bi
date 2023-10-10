@@ -31,7 +31,7 @@ services:
     environment:
       - PG_DSN=postgres://postgres:postgres@db:5433/bi?sslmode=disable
       - DASHBOARD_PORT=4010
-      - DATA_SOURCE_RECALL_URL=http://localhost:4011/api/ds/recall
+      - DATA_SOURCE_RECALL_URL=http://data_source:4011/api/ds/recall
     networks:
       - bi
 
@@ -47,6 +47,8 @@ services:
     environment:
       - PG_DSN=postgres://postgres:postgres@db:5433/bi?sslmode=disable
       - DATA_SOURCE_PORT=4011
+    volumes:
+      - ds-plugins:/usr/bin/app/plugins
     networks:
       - bi
     extra_hosts:
@@ -74,6 +76,7 @@ services:
 
 volumes:
   bi-db-data:
+  ds-plugins:
 
 networks:
   bi:
