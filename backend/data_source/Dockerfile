@@ -10,7 +10,6 @@ COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 
-COPY ./api/ /usr/src/app/api/
 COPY ./cmd/ /usr/src/app/cmd/
 COPY ./internal/ /usr/src/app/internal/
 COPY ./plugins/ /usr/src/app/plugins/
