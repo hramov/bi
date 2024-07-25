@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
 import CreateModalFullScreen from "../../../layout/components/CreateModalFullScreen.vue";
-import AddDataRowModal from "./components/AddDataRowModal.vue";
+import AddDataRowForm from "./components/AddDataRowForm.vue";
 import {chartMapper} from "../../../../modules/mapper";
-import {useDashboardStore} from "../../../../modules/store/dashboard.store.ts";
+import {useDashboardStore} from "../../../../modules/store/dashboard.store";
+import AddXAxisForm from "./components/AddXAxisForm.vue";
+import AddYAxisForm from "./components/AddYAxisForm.vue";
+import ChartBlueprint from "../chart/ChartBlueprint.vue";
 const props = defineProps(['dialog', 'dash_id']);
 const emit = defineEmits(['close', 'save']);
 
@@ -20,10 +23,7 @@ onMounted(() => {
     dash_id: store.dashboard.dash_id,
     data: [],
     options: {
-      x: {
-        title: '',
-        fn: null,
-      },
+      x: [] as any[],
       y: [] as any[],
     },
     raw_options: '',
@@ -64,19 +64,21 @@ const clear = () => {
           </v-col>
         </v-row>
 
-        <v-row>
-          <v-col cols="8">
-            <v-text-field label="Описание" v-model="model.description" />
-          </v-col>
-          <v-col cols="2">
-            <v-text-field label="Название оси Х" v-model="model.options.x.title" />
-          </v-col>
-          <v-col cols="2">
-            <v-select label="Форматирование оси Х" v-model="model.options.x.fn" />
-          </v-col>
-        </v-row>
+        <div class="settings">
+          <AddXAxisForm :model="model" />
+          <AddYAxisForm :model="model" />
+          <AddDataRowForm :model="model"/>
+        </div>
 
-        <AddDataRowModal :model="model"/>
+        <div class="chart">
+          <ChartBlueprint
+              v-if="model.raw_options"
+              :title="model.title"
+              :data="model.data"
+              :options="model.raw_options"
+              :styles="{}"
+          />
+        </div>
 
       </v-form>
     </template>

@@ -4,6 +4,7 @@ import "time"
 
 type Datasource struct {
 	Id          int
+	DriverCode  string
 	Driver      string
 	DriverId    int
 	Title       string

@@ -4,16 +4,25 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"plugin"
 	"sync"
 )
 
+type DataSourcePlugin interface {
+	Connect(ctx context.Context, dsn string) (*sql.DB, error)
+}
+
 type RawConnection struct {
-	SourceId int
-	DriverId int
-	Dsn      string
+	SourceId   int
+	DriverId   int
+	DriverCode string
+	Dsn        string
 }
 
 type Pool map[int]*sql.DB
+
+type SourcePlugin map[int]string
 
 var pool Pool
 var mu sync.RWMutex
@@ -27,23 +36,11 @@ func Connect(ctx context.Context, rc []RawConnection) []error {
 	var errs []error
 
 	for _, v := range rc {
-		switch v.DriverId {
-		case 1:
-			mu.Lock()
-			pool[v.SourceId], err = connectPg(ctx, v.Dsn)
-			mu.Unlock()
-			if err != nil {
-				errs = append(errs, err)
-			}
-			continue
-		case 2:
-			mu.Lock()
-			pool[v.SourceId], err = connectSqlServer(ctx, v.Dsn)
-			mu.Unlock()
-			if err != nil {
-				errs = append(errs, err)
-			}
-			continue
+		mu.Lock()
+		pool[v.SourceId], err = connect(ctx, v.DriverCode, v.Dsn)
+		mu.Unlock()
+		if err != nil {
+			errs = append(errs, err)
 		}
 	}
 	return errs
@@ -59,30 +56,42 @@ func Get(driver int) (*sql.DB, error) {
 	return d, nil
 }
 
-func connectPg(ctx context.Context, dsn string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", dsn)
+func getDataSourceFromPlugin(name string) (DataSourcePlugin, error) {
+	p, err := plugin.Open("plugins/data_source/" + name + "/" + name + ".so")
 	if err != nil {
-		return nil, fmt.Errorf("cannot connect to postgres (%s): %v", dsn, err)
+		return nil, fmt.Errorf("cannot open plugin %s: %v", name, err)
 	}
 
-	err = db.PingContext(ctx)
+	newFuncRaw, err := p.Lookup("New")
 	if err != nil {
-		return nil, err
+		log.Fatalln(err)
 	}
 
-	return db, nil
+	newFunc, ok := newFuncRaw.(func() DataSourcePlugin)
+	if !ok {
+		return nil, fmt.Errorf("cannot cast newFunc\n")
+	}
+
+	rawDs := newFunc()
+
+	ds, ok := rawDs.(DataSourcePlugin)
+	if !ok {
+		return nil, fmt.Errorf("cannot cast interface\n")
+	}
+
+	return ds, nil
 }
 
-func connectSqlServer(ctx context.Context, dsn string) (*sql.DB, error) {
-	db, err := sql.Open("sqlserver", dsn)
+func connect(ctx context.Context, name, dsn string) (*sql.DB, error) {
+	ds, err := getDataSourceFromPlugin(name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot get data source: %v", err)
 	}
 
-	err = db.PingContext(ctx)
+	conn, err := ds.Connect(ctx, dsn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot connect to data source: %v", err)
 	}
 
-	return db, nil
+	return conn, nil
 }
